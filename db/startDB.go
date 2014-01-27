@@ -3,20 +3,10 @@ package db
 
 import(
 	"fmt"
-	"github.com/nradz/DistGo/utils"
+	"github.com/nradz/DistGo/auxiliar"
 )
 
-
-type Conf struct{
-	Name string
-	Data []string
-
-}
-
+//initialize the database
 func StartDB(){
 	
-	conf := &Conf{}
-	utils.LoadConf("db", conf)
-
-	fmt.Println(conf.Name)
 }
