@@ -10,14 +10,16 @@ import(
 //Temporal default config
 
 var ip string = "127.0.0.1"
+var port string = "8080"
 
-//Load a json configuration file named "filename" in the "conf" struct
+//Load the config file into a string map
 func LoadConf() map[string]string{
 
 	var conf map[string]string
 
 	conf = make(map[string]string)
 	conf["ip"] = ip
+	conf["port"] = port
 
 	return conf
 

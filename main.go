@@ -2,9 +2,9 @@ package main
 
 import(
 	"fmt"
-	//"net/http"
+	"net/http"
 	//"github.com/nradz/DistGo/db"
-	//"github.com/nradz/DistGo/rq"
+	"github.com/nradz/DistGo/rq"
 	"github.com/nradz/DistGo/auxiliar"
 )
 
@@ -17,16 +17,13 @@ func main() {
 
 	//db.StartDB() //initialize the database
 
-	aux := auxiliar.LoadConf()
-
-	fmt.Println(aux["ip"])
+	conf := auxiliar.LoadConf()
 
 	fmt.Println("DistGo is working!")
 
 
-
-	//http.HandleFunc("/", rq.LoadAnt)
-	//http.ListenAndServe(":8080", nil)
+	http.HandleFunc("/", rq.LoadProblem(conf))
+	http.ListenAndServe(":"+conf["port"], nil)
 
     	
 }
