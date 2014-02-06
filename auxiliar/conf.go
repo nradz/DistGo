@@ -11,6 +11,7 @@ import(
 
 var ip string = "127.0.0.1"
 var port string = "8080"
+var cors string = "*"
 
 //Load the config file into a string map
 func LoadConf() map[string]string{
@@ -20,6 +21,7 @@ func LoadConf() map[string]string{
 	conf = make(map[string]string)
 	conf["ip"] = ip
 	conf["port"] = port
+	conf["cors"] = cors
 
 	return conf
 
