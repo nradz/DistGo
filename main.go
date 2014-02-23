@@ -5,8 +5,10 @@ import(
 	"net/http"
 	//"github.com/nradz/DistGo/db"
 	//"github.com/nradz/DistGo/distgo_types"
-	"github.com/nradz/DistGo/auxiliar"
+	"github.com/nradz/DistGo/configuration"
 	"github.com/nradz/DistGo/controllers/connectionController"
+	"github.com/nradz/DistGo/controllers/clientController"
+	//"github.com/nradz/DistGo/channels"
 )
 
 
@@ -17,15 +19,16 @@ func main() {
 
 	//db.StartDB() //initialize the database
 
-	conf := auxiliar.LoadConf()
+	//Load conf
+	configuration.LoadConf()
 
-	//Start 
+	//Start Controllers
+	go clientController.ClientController()
 
 	fmt.Println("DistGo is working!")
 
-
-	http.HandleFunc("/",connectionController.Controller(conf))
-	http.ListenAndServe(":"+conf["port"], nil)
+	http.HandleFunc("/",connectionController.ConnectionController())
+	http.ListenAndServe(":8080", nil)
 
     	
 }

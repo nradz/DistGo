@@ -1,48 +1,46 @@
-package distgo_types
+package clientController
 
 import(
 	"math/rand"
 	"time"
 )
 
-type ClientList struct{
-	List map[uint32]Client
-}
+type ClientList map[uint32]Client
 
 type Client struct{
-	Ip string
+	Header map[string][]string
 }
 
 
 //Generate a new ClientList with default values
-func NewClientList() ClientList{
+func newClientList() ClientList{
 
 	cl := ClientList{}
 
-	cl.List = make(map[uint32]Client)
+	cl = make(map[uint32]Client)
 
 	return cl
 }
 
-func (l *ClientList) NewClient(ip string){
+func (l ClientList) newClient(header map[string][]string) uint32{
 
 	//Use a random number as a id and check if it is available.
 	rand.Seed(time.Now().UTC().UnixNano())
 	var id uint32 = rand.Uint32()
 	
 	for used := true; used == true;{
-		_, used = l.List[id]
-		if used{
+		_, used = l[id]
+		if used || (id == 0){
 			rand.Seed(time.Now().UTC().UnixNano())
 			id = rand.Uint32()
 		}
 	}
 
-	var cli Client = Client{ip}
-
+	var cli Client = Client{header}
 
 
 	//Add the client to the list
-	l.List[id] = cli 
+	l[id] = cli 
 
+	return id
 }

@@ -1,3 +1,0 @@
-package distgo_types
-
-
