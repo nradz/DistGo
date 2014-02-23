@@ -93,8 +93,9 @@ func notValidType(sr *ServerResponse, cr ClientRequest, header http.Header){
 }
 
 func newClient(sr *ServerResponse, cr ClientRequest, header http.Header){
+	
 	control := &channels.ClientControlRequest{cr.Id, 10,
-	 header, make(chan channels.ClientControlResponse)}	
+		header, make(chan channels.ClientControlResponse)}
 
 	res := clientChan.Send(control)
 
@@ -106,12 +107,12 @@ func newClient(sr *ServerResponse, cr ClientRequest, header http.Header){
 
 }
 
-func newRequest(sr *ServerResponse, cr ClientRequest, header http.Header){
-	
+func newRequest(sr *ServerResponse, cr ClientRequest, header http.Header){	
 	return
 }
 
 func newResult(sr *ServerResponse, cr ClientRequest, header http.Header){
+	return
 }
 
 func deleteClient(sr *ServerResponse, cr ClientRequest, header http.Header){

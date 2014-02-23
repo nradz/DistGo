@@ -57,6 +57,7 @@ func newClient(header map[string][]string) (uint32, uint8){
 	return idres, tRes
 }
 
+
 func isLogged(id uint32, header map[string][]string) (uint32, uint8){
 
 	cSaved, err := clist[id]
@@ -67,20 +68,43 @@ func isLogged(id uint32, header map[string][]string) (uint32, uint8){
 
 
 	switch{
-		case !err:
-			tRes = 1
+	case !err:
+		tRes = 1
 
-		case eq:
-			tRes = 2 
+	case eq:
+		tRes = 2 
 
-		default:
-			tRes = 20		
+	default:
+		tRes = 20		
 
 	}
 
 	return id, tRes
 
 }
+
+func deleteClient(id uint32, header map[string][]string) (uint32, uint8){
+
+	cSaved, err := clist[id]
+	
+	var tRes uint8 = 0
+
+	eq := reflect.DeepEqual(header, cSaved.Header)
+
+	switch{
+	case !err:
+		tRes = 1
+
+	case eq:
+		tRes = 2
+
+	default:
+		tRes = 30
+	}
+
+	return id, tRes
+}
+
 
 func unknownError(id uint32, header map[string][]string) (uint32, uint8){
 
