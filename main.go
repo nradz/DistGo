@@ -2,7 +2,6 @@ package main
 
 import(
 	"fmt"
-	"net/http"
 	//"github.com/nradz/DistGo/db"
 	//"github.com/nradz/DistGo/distgo_types"
 	"github.com/nradz/DistGo/configuration"
@@ -27,8 +26,6 @@ func main() {
 
 	fmt.Println("DistGo is working!")
 
-	http.HandleFunc("/",connectionController.ConnectionController())
-	http.ListenAndServe(":8080", nil)
-
-    	
+	connectionController.ConnectionController()
+  	
 }

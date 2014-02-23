@@ -13,9 +13,9 @@ var(
 	conf = configuration.Configuration()
 	)
 
-func ConnectionController() func(w http.ResponseWriter, r *http.Request){
-	
-	return func(w http.ResponseWriter, r *http.Request){
+func ConnectionController(){
+
+	http.HandleFunc("/",func(w http.ResponseWriter, r *http.Request){
 
 		if conf.Cors() != ""{
 			w.Header().Set("Access-Control-Allow-Origin", conf.Cors())
@@ -64,7 +64,10 @@ func ConnectionController() func(w http.ResponseWriter, r *http.Request){
 		//Write the data in the ResponseWriter
 		fmt.Fprintf(w, resString)
 
-	}
+	})
+
+
+	http.ListenAndServe(":"+conf.Port(), nil)
 
 }
 
