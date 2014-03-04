@@ -1,7 +1,7 @@
 package clientController
 
 import(
-	//"fmt"
+	"fmt"
 	"reflect"
 	"github.com/nradz/DistGo/channels"	
 	"github.com/nradz/DistGo/configuration"
@@ -25,6 +25,7 @@ func ClientController(){
 		select{
 		
 		case creq := <- clientChan.Receive():
+			fmt.Println("Recibido")
 
 			switch creq.Code{
 				case 10:
@@ -60,7 +61,7 @@ func newClient(header map[string][]string) (uint32, uint8){
 
 func isLogged(id uint32, header map[string][]string) (uint32, uint8){
 
-	cSaved, err := clist[id]
+	cSaved, ok := clist[id]
 
 	var tRes uint8 = 0
 
@@ -68,10 +69,10 @@ func isLogged(id uint32, header map[string][]string) (uint32, uint8){
 
 
 	switch{
-	case !err:
+	case !ok:
 		tRes = 1
 
-	case eq:
+	case !eq:
 		tRes = 2 
 
 	default:
@@ -85,20 +86,21 @@ func isLogged(id uint32, header map[string][]string) (uint32, uint8){
 
 func deleteClient(id uint32, header map[string][]string) (uint32, uint8){
 
-	cSaved, err := clist[id]
+	cSaved, ok := clist[id]
 	
 	var tRes uint8 = 0
 
 	eq := reflect.DeepEqual(header, cSaved.Header)
 
 	switch{
-	case !err:
+	case !ok:
 		tRes = 1
 
-	case eq:
+	case !eq:
 		tRes = 2
 
 	default:
+		delete(clist, id)
 		tRes = 30
 	}
 
@@ -107,7 +109,7 @@ func deleteClient(id uint32, header map[string][]string) (uint32, uint8){
 
 
 func unknownError(id uint32, header map[string][]string) (uint32, uint8){
-
+	fmt.Println("Unkown Error")
 	return id, 0
 
 }

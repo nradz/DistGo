@@ -10,6 +10,7 @@ import(
 
 var(
 	clientChan = channels.ClientControlChannel()
+	problemChan = channels.ProblemControlChannel()
 	conf = configuration.Configuration()
 	)
 
@@ -41,20 +42,20 @@ func ConnectionController(){
 		case errJSON != nil:
 			notValidJSON(&sr, cr, header)
 
-		case cr.Type == 10:
+		case cr.Code == 10:
 			newClient(&sr, cr, header)
 
-		case cr.Type == 20:
+		case cr.Code == 20:
 			newRequest(&sr, cr, header)
 
-		case cr.Type == 30:
+		case cr.Code == 30:
 			newResult(&sr, cr, header)
 
-		case cr.Type == 100:
+		case cr.Code == 100:
 			deleteClient(&sr, cr, header)
 
 		default:
-			notValidType(&sr, cr, header)
+			notValidCode(&sr, cr, header)
 		}
 				
 		//Response struct to string
@@ -72,24 +73,24 @@ func ConnectionController(){
 }
 
 func notPostMethod(sr *ServerResponse, cr ClientRequest, header http.Header){
-	sr.Type = 0
+	sr.Code = 0
 	
 	sr.Data = make([]string,1)
 	sr.Data[0] = "The request method is not POST"
 }
 
 func notValidJSON(sr *ServerResponse, cr ClientRequest, header http.Header){
-	sr.Type = 0
+	sr.Code = 0
 	
 	sr.Data = make([]string,1)
 	sr.Data[0] = "The JSON message is not valid"
 }
 
-func notValidType(sr *ServerResponse, cr ClientRequest, header http.Header){
-	sr.Type = 0
+func notValidCode(sr *ServerResponse, cr ClientRequest, header http.Header){
+	sr.Code = 0
 	
 	sr.Data = make([]string,1)
-	sr.Data[0] = "Not valid type"
+	sr.Data[0] = "Not valid Code"
 }
 
 func newClient(sr *ServerResponse, cr ClientRequest, header http.Header){
@@ -99,22 +100,114 @@ func newClient(sr *ServerResponse, cr ClientRequest, header http.Header){
 
 	res := clientChan.Send(control)
 
-	sr.Type = 110
-	sr.Id = res.Id
+	switch{
+	
+	case res.Code == 10:
+		sr.Code = 110
+		sr.Id = res.Id
+		sr.Data = make([]string,1)
+		sr.Data[0] = "welcome!"
 
-	sr.Data = make([]string,1)
-	sr.Data[0] = "welcome!"
+	default:
+		fmt.Println("Error en newClient: "+string(res.Code))
+		sr.Id = res.Id
+		sr.Code = 0
+	}
 
 }
 
 func newRequest(sr *ServerResponse, cr ClientRequest, header http.Header){	
-	return
+
+	control := &channels.ClientControlRequest{cr.Id, 20,
+		header, make(chan channels.ClientControlResponse)}
+
+	logged := clientChan.Send(control)
+
+	switch{
+
+	case logged.Code == 20:
+		problemReq := &channels.ProblemControlRequest{cr.Id, 20,
+			cr.Data, make(chan channels.ProblemControlResponse)}
+		
+		probRes := problemChan.SendRequest(problemReq)
+		
+		sr.Id = cr.Id
+		sr.Code = probRes.Code
+		sr.Alg = probRes.Alg
+
+	//Error in the logging
+	case logged.Code < 10:
+		sr.Id = cr.Id
+		sr.Code = 0
+
+	//Internal Error
+	default:
+		fmt.Println("Error en newRequest: "+string(logged.Code))
+		sr.Id = cr.Id
+		sr.Code = 0
+	}
+
 }
 
 func newResult(sr *ServerResponse, cr ClientRequest, header http.Header){
-	return
+	
+	control := &channels.ClientControlRequest{cr.Id, 20,
+		header, make(chan channels.ClientControlResponse)}
+
+	logged := clientChan.Send(control)
+
+	switch{
+	case logged.Code == 20:
+		
+		problemReq := &channels.ProblemControlRequest{cr.Id, 20,
+			cr.Data, make(chan channels.ProblemControlResponse)}
+		
+		prob := problemChan.SendRequest(problemReq)
+
+		sr.Id = cr.Id
+		sr.Code = prob.Code
+		sr.Alg = prob.Alg
+		sr.Data = prob.Data
+
+	//Error in the logging
+	case logged.Code < 10:
+		sr.Id = cr.Id
+		sr.Code = 0
+
+	//Internal Error
+	default:
+		fmt.Println("Error en newResult: "+string(logged.Code))
+		sr.Id = cr.Id
+		sr.Code = 0
+	}
+
 }
 
 func deleteClient(sr *ServerResponse, cr ClientRequest, header http.Header){
-	return
+	
+	control := &channels.ClientControlRequest{cr.Id, 30,
+		header, make(chan channels.ClientControlResponse)}
+
+	deleted := clientChan.Send(control)
+
+	switch{
+
+	case deleted.Code == 30:
+		sr.Code = 140
+		sr.Id = cr.Id
+		sr.Data = make([]string,1)
+		sr.Data[0] = "Goodbye!"
+
+	//Error in the logging
+	case deleted.Code < 10:
+		sr.Id = cr.Id
+		sr.Code = 0
+
+	//Internal Error
+	default:
+		fmt.Println("Error en newResult: "+string(deleted.Code))
+		sr.Id = cr.Id
+		sr.Code = 0
+
+	}
 }

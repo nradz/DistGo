@@ -1,13 +1,16 @@
 package channels
 
-var clientChan = clientControlChannel{make(chan *ClientControlRequest)}
-var problemChan = problemControlChannel{make(chan *ProblemControlRequest)}
+var (
+	clientChan = clientControlChannel{make(chan *ClientControlRequest)}
+	problemChan = problemControlChannel{make(chan *ProblemControlRequest),
+		make(chan ProblemUpdate)}
+	)
 
 func ClientControlChannel() *clientControlChannel{
 	return &clientChan
 }
 
-func ProblemControlChannel() *ProblemControlChannel{
+func ProblemControlChannel() *problemControlChannel{
 	return &problemChan
 }
 

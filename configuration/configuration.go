@@ -11,6 +11,7 @@ type configuration struct{
 	ip string
 	port string
 	cors string
+	problem string
 }
 
 
@@ -19,10 +20,11 @@ func LoadConf(){
 	conf.ip = "127.0.0.1"
 	conf.port = "8080"
 	conf.cors = "*"
+	conf.problem = "pruebaProblem"
 }
 
-func Configuration() configuration{
-	return conf
+func Configuration() *configuration{
+	return &conf
 }
 
 func (c *configuration) Ip() string{
@@ -35,4 +37,8 @@ func (c *configuration) Port() string{
 
 func (c *configuration) Cors() string{
 	return conf.cors
+}
+
+func (c *configuration) Problem() string{
+	return conf.problem
 }
