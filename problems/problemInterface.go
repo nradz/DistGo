@@ -9,3 +9,5 @@ type Problem interface{
 	NewResult([]string)
 	Loop()
 }
+
+

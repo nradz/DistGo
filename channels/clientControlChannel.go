@@ -7,7 +7,7 @@ type clientControlChannel struct{
 type ClientControlRequest struct{	
 	Id uint32
 	Code uint8
-	Header map[string][]string	
+	UserAgent []string	
 	Response chan ClientControlResponse
 }
 

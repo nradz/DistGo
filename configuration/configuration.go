@@ -20,7 +20,7 @@ func LoadConf(){
 	conf.ip = "127.0.0.1"
 	conf.port = "8080"
 	conf.cors = "*"
-	conf.problem = "pruebaProblem"
+	conf.problem = "TSPGeneticProblem"
 }
 
 func Configuration() *configuration{

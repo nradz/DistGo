@@ -4,11 +4,12 @@ import(
 "github.com/nradz/DistGo/channels"
 )
 
+type data interface{}
 
 type simpleProblemState struct{
 	Alg string //The actual algorithm that is executing in the clients
-	LastUpdate []string //The last update available
-	Clients map[uint32]clientState //Map of the clients with their state
+	LastUpdate data //The last update available
+	Clients map[uint32]*clientState //Map of the clients with their state
 }
 
 type clientState struct{

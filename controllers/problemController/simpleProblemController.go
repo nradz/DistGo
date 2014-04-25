@@ -18,7 +18,7 @@ var problemState = simpleProblemState{}
 func SimpleProblemController(problem problems.Problem){
 
 	problemState.LastUpdate = nil
-	problemState.Clients = make(map[uint32]clientState)
+	problemState.Clients = make(map[uint32]*clientState)
 
 	firstUpdate := problem.Init()
 
@@ -30,10 +30,11 @@ func SimpleProblemController(problem problems.Problem){
 
 	for{
 		select{
-		case req := <-problemChan.ReceiveRequest():
-			fromClient(req, problem)
 		case update := <-problemChan.ReceiveUpdate():
 			fromProblem(update)
+
+		case req := <-problemChan.ReceiveRequest():
+			fromClient(req, problem)		
 		}
 	}
 
@@ -43,18 +44,17 @@ func SimpleProblemController(problem problems.Problem){
 
 func fromClient(req *channels.ProblemControlRequest, problem problems.Problem){
 	cState, ok := problemState.Clients[req.Id]
-
 	switch{
 		// New client
 		case !ok && (req.Code == 20):
 			newClient(req)
 		// Standard Request
 		case ok && (req.Code == 20):
-			newRequest(req, &cState)
+			newRequest(req, cState)
 		// Request with new result
 		case ok && (req.Code == 30):
 			//newResult(req, cState)
-			newRequest(req, &cState)
+			newResult(req, cState)
 			//Pass the data to the problem (asynchronous)
 			go problem.NewResult(req.Data)
 
@@ -67,7 +67,7 @@ func fromClient(req *channels.ProblemControlRequest, problem problems.Problem){
 func newClient(req *channels.ProblemControlRequest){
 	cState := clientState{false, true, nil}
 
-	problemState.Clients[req.Id] = cState
+	problemState.Clients[req.Id] = &cState
 
 	//Make the response with the algorithm and the last update
 	res := channels.ProblemControlResponse{130, problemState.Alg, problemState.LastUpdate}
@@ -78,6 +78,7 @@ func newClient(req *channels.ProblemControlRequest){
 func newRequest(req *channels.ProblemControlRequest, cState *clientState){
 
 	switch{
+
 	//Client in standby
 	case cState.Updated && !cState.Ready:
 		cState.Ready = true
@@ -92,6 +93,13 @@ func newRequest(req *channels.ProblemControlRequest, cState *clientState){
 			cState.Updated, cState.Ready)
 	}
 
+}
+
+
+func newResult(req *channels.ProblemControlRequest, cState *clientState){
+
+	res := channels.ProblemControlResponse{140, "", nil}
+	req.Response <- res
 }
 
 /////////fromProblem and his functions///////////////
@@ -112,8 +120,8 @@ func fromProblem(update channels.ProblemUpdate){
 			cState.Updated = false
 
 		default:
-		fmt.Println("Error in simpleProblemController.fromProblem-> Updated: %t Ready: %t",
-			cState.Updated, cState.Ready)
+		fmt.Println("Error in simpleProblemController.fromProblem-> Updated:",
+			cState.Updated, " Ready: ", cState.Ready)
 
 		}
 	}

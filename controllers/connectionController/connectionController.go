@@ -34,28 +34,30 @@ func ConnectionController(){
 
 		header := r.Header
 
+		userAgent := header["User-Agent"]
+
 		switch{
 		//Throwed if the request method is not POST	
 		case r.Method != "POST":
-			notPostMethod(&sr, cr, header)
+			notPostMethod(&sr, cr, userAgent)
 		
 		case errJSON != nil:
-			notValidJSON(&sr, cr, header)
+			notValidJSON(&sr, cr, userAgent)
 
 		case cr.Code == 10:
-			newClient(&sr, cr, header)
+			newClient(&sr, cr, userAgent)
 
 		case cr.Code == 20:
-			newRequest(&sr, cr, header)
+			newRequest(&sr, cr, userAgent)
 
 		case cr.Code == 30:
-			newResult(&sr, cr, header)
+			newResult(&sr, cr, userAgent)
 
 		case cr.Code == 100:
-			deleteClient(&sr, cr, header)
+			deleteClient(&sr, cr, userAgent)
 
 		default:
-			notValidCode(&sr, cr, header)
+			notValidCode(&sr, cr, userAgent)
 		}
 				
 		//Response struct to string
@@ -72,31 +74,28 @@ func ConnectionController(){
 
 }
 
-func notPostMethod(sr *ServerResponse, cr ClientRequest, header http.Header){
+func notPostMethod(sr *ServerResponse, cr ClientRequest, userAgent []string){
 	sr.Code = 0
 	
-	sr.Data = make([]string,1)
-	sr.Data[0] = "The request method is not POST"
+	sr.Data = "The request method is not POST"
 }
 
-func notValidJSON(sr *ServerResponse, cr ClientRequest, header http.Header){
+func notValidJSON(sr *ServerResponse, cr ClientRequest, userAgent []string){
 	sr.Code = 0
 	
-	sr.Data = make([]string,1)
-	sr.Data[0] = "The JSON message is not valid"
+	sr.Data = "The JSON message is not valid"
 }
 
-func notValidCode(sr *ServerResponse, cr ClientRequest, header http.Header){
+func notValidCode(sr *ServerResponse, cr ClientRequest, userAgent []string){
 	sr.Code = 0
 	
-	sr.Data = make([]string,1)
-	sr.Data[0] = "Not valid Code"
+	sr.Data = "Not valid Code"
 }
 
-func newClient(sr *ServerResponse, cr ClientRequest, header http.Header){
+func newClient(sr *ServerResponse, cr ClientRequest, userAgent []string){
 	
 	control := &channels.ClientControlRequest{cr.Id, 10,
-		header, make(chan channels.ClientControlResponse)}
+		userAgent, make(chan channels.ClientControlResponse)}
 
 	res := clientChan.Send(control)
 
@@ -105,8 +104,8 @@ func newClient(sr *ServerResponse, cr ClientRequest, header http.Header){
 	case res.Code == 10:
 		sr.Code = 110
 		sr.Id = res.Id
-		sr.Data = make([]string,1)
-		sr.Data[0] = "welcome!"
+		sr.Data = "welcome!"
+
 
 	default:
 		fmt.Println("Error en newClient: "+string(res.Code))
@@ -116,10 +115,10 @@ func newClient(sr *ServerResponse, cr ClientRequest, header http.Header){
 
 }
 
-func newRequest(sr *ServerResponse, cr ClientRequest, header http.Header){	
+func newRequest(sr *ServerResponse, cr ClientRequest, userAgent []string){	
 
 	control := &channels.ClientControlRequest{cr.Id, 20,
-		header, make(chan channels.ClientControlResponse)}
+		userAgent, make(chan channels.ClientControlResponse)}
 
 	logged := clientChan.Send(control)
 
@@ -134,6 +133,7 @@ func newRequest(sr *ServerResponse, cr ClientRequest, header http.Header){
 		sr.Id = cr.Id
 		sr.Code = probRes.Code
 		sr.Alg = probRes.Alg
+		sr.Data = probRes.Data
 
 	//Error in the logging
 	case logged.Code < 10:
@@ -149,17 +149,17 @@ func newRequest(sr *ServerResponse, cr ClientRequest, header http.Header){
 
 }
 
-func newResult(sr *ServerResponse, cr ClientRequest, header http.Header){
-	
+func newResult(sr *ServerResponse, cr ClientRequest, userAgent []string){
+
 	control := &channels.ClientControlRequest{cr.Id, 20,
-		header, make(chan channels.ClientControlResponse)}
+		userAgent, make(chan channels.ClientControlResponse)}
 
 	logged := clientChan.Send(control)
 
 	switch{
 	case logged.Code == 20:
 		
-		problemReq := &channels.ProblemControlRequest{cr.Id, 20,
+		problemReq := &channels.ProblemControlRequest{cr.Id, 30,
 			cr.Data, make(chan channels.ProblemControlResponse)}
 		
 		prob := problemChan.SendRequest(problemReq)
@@ -183,20 +183,19 @@ func newResult(sr *ServerResponse, cr ClientRequest, header http.Header){
 
 }
 
-func deleteClient(sr *ServerResponse, cr ClientRequest, header http.Header){
+func deleteClient(sr *ServerResponse, cr ClientRequest, userAgent []string){
 	
 	control := &channels.ClientControlRequest{cr.Id, 30,
-		header, make(chan channels.ClientControlResponse)}
+		userAgent, make(chan channels.ClientControlResponse)}
 
 	deleted := clientChan.Send(control)
 
 	switch{
 
 	case deleted.Code == 30:
-		sr.Code = 140
+		sr.Code = 150
 		sr.Id = cr.Id
-		sr.Data = make([]string,1)
-		sr.Data[0] = "Goodbye!"
+		sr.Data = "Goodbye!"
 
 	//Error in the logging
 	case deleted.Code < 10:

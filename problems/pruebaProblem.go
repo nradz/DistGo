@@ -10,7 +10,10 @@ type pruebaProblem struct{
 }
 
 const(
-	alg = `window.alert("miau");
+	alg = `function mainFunc(romero,data){
+				window.alert("miau");
+					romero.finish();
+				}
 	`	
 	)
 

@@ -8,7 +8,7 @@ import(
 type ClientList map[uint32]Client
 
 type Client struct{
-	Header map[string][]string
+	UserAgent []string
 }
 
 
@@ -22,7 +22,7 @@ func newClientList() ClientList{
 	return cl
 }
 
-func (l ClientList) newClient(header map[string][]string) uint32{
+func (l ClientList) newClient(userAgent []string) uint32{
 
 	//Use a random number as a id and check if it is available.
 	rand.Seed(time.Now().UTC().UnixNano())
@@ -36,7 +36,7 @@ func (l ClientList) newClient(header map[string][]string) uint32{
 		}
 	}
 
-	var cli Client = Client{header}
+	var cli Client = Client{userAgent}
 
 
 	//Add the client to the list

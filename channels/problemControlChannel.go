@@ -1,5 +1,7 @@
 package channels
 
+type data interface{}
+
 type problemControlChannel struct{
 	reqChan chan *ProblemControlRequest
 	updateChan chan ProblemUpdate
@@ -16,13 +18,16 @@ type ProblemControlRequest struct{
 type ProblemControlResponse struct{
 	Code uint8
 	Alg string
-	Data []string
+	Data data
 }
 
 type ProblemUpdate struct{
 	Alg string
-	Data []string
+	Data data
 }
+
+
+
 
 
 ///////////////////////////////////
