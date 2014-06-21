@@ -1,60 +1,56 @@
 package clientController
 
 import(
-	"fmt"
-	"reflect"
-	"error"
-	"github.com/nradz/DistGo/channels"	
 	"github.com/nradz/DistGo/configuration"
 )
 
-type ClientControlRequest struct{	
+
+//Request codes:
+//10: New client
+//20: isLogged
+//30: Delente Client
+type clientControlRequest struct{	
 	Id uint32
 	Code uint8
 	UserAgent []string	
-	Response chan ClientControlResponse
+	Response chan clientControlResponse
 }
 
-type ClientControlResponse struct{
+type clientControlResponse struct{
 	Id uint32
-	Code uint8
+	Err error
 }
 
 var (
-	clientChan = make(chan *ClientControlRequest)
+	clientChan = make(chan *clientControlRequest)
 	conf = configuration.Configuration()
+	clist clientList =clientList{}
 	)
-
-var clist ClientList = ClientList{}
 
 func ClientController(){
 
 	clist = newClientList()
 
 	var id uint32 = 0
-	var t uint8 = 0
+	var err error = nil
 
 	for {
 		select{
 		
-		case creq := <- clientChan.Receive():
+		case req := <- clientChan:
 			
-			switch creq.Code{
+			switch req.Code{
 				case 10:
-					id, t = newClient(creq.UserAgent)
+					id, err = clist.newClient(req.UserAgent)
 				case 20:
-					id, t = isLogged(creq.Id, creq.UserAgent)
+					err = clist.isLogged(req.Id, req.UserAgent)
 				case 30:
-					id, t = deleteClient(creq.Id, creq.UserAgent)
-
-				default:
-					id, t = unknownError(creq.Id, creq.UserAgent, creq.Code)
-
+					err = clist.deleteClient(req.Id, req.UserAgent)
 			}
 
-			cres := channels.ClientControlResponse{id,t}
+			res := clientControlResponse{id, err}
 
-			creq.Response <- cres
+			req.Response <- res
 
 		}
 
@@ -65,59 +61,36 @@ func ClientController(){
 
 func NewClient(userAgent []string) (uint32, error){
 
-	var idres uint32 = clist.newClient(userAgent)
+	req := &clientControlRequest{0, 10, userAgent, make(chan clientControlResponse)}
 
-	fmt.Println("New Client:", idres)
+	clientChan <- req
 
-	return idres, nil
+	res := <- req.Response
+
+	return res.Id, res.Err
 }
 
 
-func IsLogged(id uint32, userAgent []string) (uint32, error){
+func IsLogged(id uint32, userAgent []string) error{
 
-	cSaved, ok := clist[id]
+	req := &clientControlRequest{id, 20, userAgent, make(chan clientControlResponse)}
 
-	var tRes uint8 = 0
+	clientChan <- req
 
-	eq := reflect.DeepEqual(userAgent, cSaved.UserAgent)
+	res := <- req.Response
 
-	switch{
-	case !ok:
-		tRes = 1
-
-	case !eq:
-		tRes = 2 
-
-	default:
-		tRes = 20		
-
-	}
-
-	return id, tRes
+	return res.Err
 
 }
 
-func DeleteClient(id uint32, userAgent []string) (uint32, error){
+func DeleteClient(id uint32, userAgent []string) error{
 
-	cSaved, ok := clist[id]
-	
-	var tRes uint8 = 0
+	req := &clientControlRequest{id, 30, userAgent, make(chan clientControlResponse)}
 
-	eq := reflect.DeepEqual(userAgent, cSaved.UserAgent)
+	clientChan <- req
 
-	switch{
-	case !ok:
-		tRes = 1
+	res := <- req.Response
 
-	case !eq:
-		tRes = 2
+	return res.Err
 
-	default:
-		delete(clist, id)
-		tRes = 30
-	}
-
-	fmt.Println(clist)
-
-	return id, tRes
 }

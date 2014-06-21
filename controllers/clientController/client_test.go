@@ -8,34 +8,47 @@ import(
 func TestNewClient(t *testing.T){
 	go ClientController()
 	header := make([]string,10)
-	id, err := NewClient(header)
+	_, err := NewClient(header)
 
 	if err != nil{
-		t.Fail()
+		t.Error(err.Error())
 	} 
 }
 
 func TestLogged(t *testing.T){
 	go ClientController()
 	header := make([]string, 10)
-	id, err := NewClient(header)
+	id, _ := NewClient(header)
 
 
-	logged, err := IsLogged(id, header)
+	err := IsLogged(id, header)
 
-	if logged != true{
-		t.Fail()
+	if err != nil{
+		t.Error(err.Error())
 	}
 
+}
+
+func TestLoggedNotUserAgent(t *testing.T){
+	go ClientController()
+	header := make([]string, 10)
+	id, _ := NewClient(header)
+
+	otherHeader := make([]string, 11)
+	err := IsLogged(id, otherHeader)
+
+	if err == nil{
+		t.Fail()
+	}
 }
 
 func TestNotLogged(t *testing.T){
 	go ClientController()
 	header := make([]string, 10)
 	
-	logged, err := IsLogged(10, header)
+	err := IsLogged(10, header)
 
-	if logged != false{
+	if err == nil{
 		t.Fail()
 	}
 
@@ -44,12 +57,12 @@ func TestNotLogged(t *testing.T){
 func TestDeletedClient(t *testing.T){
 	go ClientController()
 	header := make([]string,10)
-	id, err := NewClient(header)
+	id, _ := NewClient(header)
 
-	deleted, err := DeleteClient(id, header)
+	err := DeleteClient(id, header)
 
-	if deleted != true{
-		t.Fail()
+	if err != nil{
+		t.Error(err.Error())
 	}
 }
 
@@ -57,9 +70,9 @@ func TestNotDeletedClient(t *testing.T){
 	go ClientController()
 	header := make([]string,10)
 
-	deleted, err := DeleteClient(10, header)
+	err := DeleteClient(10, header)
 
-	if deleted != false{
+	if err == nil{
 		t.Fail()
 	}
 }

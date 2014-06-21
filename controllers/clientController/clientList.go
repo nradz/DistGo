@@ -1,28 +1,30 @@
 package clientController
 
 import(
+	"reflect"
 	"math/rand"
 	"time"
+	"errors"
 )
 
-type ClientList map[uint32]Client
+type clientList map[uint32]client
 
-type Client struct{
-	UserAgent []string
+type client struct{
+	userAgent []string
 }
 
 
 //Generate a new ClientList with default values
-func newClientList() ClientList{
+func newClientList() clientList{
 
-	cl := ClientList{}
+	cl := clientList{}
 
-	cl = make(map[uint32]Client)
+	cl = make(map[uint32]client)
 
 	return cl
 }
 
-func (l ClientList) newClient(userAgent []string) uint32{
+func (l clientList) newClient(userAgent []string) (uint32, error){
 
 	//Use a random number as a id and check if it is available.
 	rand.Seed(time.Now().UTC().UnixNano())
@@ -36,11 +38,41 @@ func (l ClientList) newClient(userAgent []string) uint32{
 		}
 	}
 
-	var cli Client = Client{userAgent}
+	var cli client = client{userAgent}
 
 
 	//Add the client to the list
 	l[id] = cli 
 
-	return id
+	return id, nil
+}
+
+func (l clientList) isLogged(id uint32, userAgent []string) error{
+	
+	saved, ok := clist[id]
+
+	eq := reflect.DeepEqual(userAgent, saved.userAgent)
+
+	switch{
+	//Id not found
+	case !ok:
+		return errors.New("Id not found")
+	//UserAgent not equal
+	case !eq:
+		return errors.New("UserAgent not equal")
+	//Logged Client
+	default:
+		return nil
+	}
+
+}
+
+func (l clientList) deleteClient(id uint32, userAgent []string) error{
+
+	if err := l.isLogged(id, userAgent); err != nil{
+		return err
+	}else{
+		delete(clist, id)
+		return nil
+	}
 }
