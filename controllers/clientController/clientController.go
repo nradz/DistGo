@@ -3,12 +3,25 @@ package clientController
 import(
 	"fmt"
 	"reflect"
+	"error"
 	"github.com/nradz/DistGo/channels"	
 	"github.com/nradz/DistGo/configuration"
 )
 
+type ClientControlRequest struct{	
+	Id uint32
+	Code uint8
+	UserAgent []string	
+	Response chan ClientControlResponse
+}
+
+type ClientControlResponse struct{
+	Id uint32
+	Code uint8
+}
+
 var (
-	clientChan = channels.ClientControlChannel()
+	clientChan = make(chan *ClientControlRequest)
 	conf = configuration.Configuration()
 	)
 
@@ -50,21 +63,17 @@ func ClientController(){
 }
 
 
-func newClient(userAgent []string) (uint32, uint8){
+func NewClient(userAgent []string) (uint32, error){
 
 	var idres uint32 = clist.newClient(userAgent)
 
-	var tRes uint8 = 10
-
 	fmt.Println("New Client:", idres)
 
-	fmt.Println(clist)
-
-	return idres, tRes
+	return idres, nil
 }
 
 
-func isLogged(id uint32, userAgent []string) (uint32, uint8){
+func IsLogged(id uint32, userAgent []string) (uint32, error){
 
 	cSaved, ok := clist[id]
 
@@ -88,7 +97,7 @@ func isLogged(id uint32, userAgent []string) (uint32, uint8){
 
 }
 
-func deleteClient(id uint32, userAgent []string) (uint32, uint8){
+func DeleteClient(id uint32, userAgent []string) (uint32, error){
 
 	cSaved, ok := clist[id]
 	
@@ -111,11 +120,4 @@ func deleteClient(id uint32, userAgent []string) (uint32, uint8){
 	fmt.Println(clist)
 
 	return id, tRes
-}
-
-
-func unknownError(id uint32, userAgent []string, code uint8) (uint32, uint8){
-	fmt.Println("Error-> Code: ",code)
-	return id, 0
-
 }
