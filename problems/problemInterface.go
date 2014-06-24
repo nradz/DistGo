@@ -1,11 +1,14 @@
 package problems
 
-import(
-	"github.com/nradz/DistGo/channels"
-	)
+type data interface{}
+
+type ProblemUpdate struct{
+	Alg string
+	Data data
+}
 
 type Problem interface{
-	Init() channels.ProblemUpdate
+	Init(chan ProblemUpdate) ProblemUpdate
 	NewResult([]string)
 	Loop()
 }

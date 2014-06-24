@@ -1,12 +1,13 @@
 package problems
 
 import(
-	"fmt"
-	"github.com/nradz/DistGo/channels"
+	"strconv"
+	//"fmt"
 	)
 
 type pruebaProblem struct{
-
+	best int64
+	c chan ProblemUpdate
 }
 
 const(
@@ -17,18 +18,28 @@ const(
 	`	
 	)
 
-func (prob pruebaProblem) Init() channels.ProblemUpdate{
+func (prob *pruebaProblem) Init(c chan ProblemUpdate) ProblemUpdate{
 
-	return channels.ProblemUpdate{alg, nil}
+	prob.best = 0
 
-}
+	prob.c = c
 
-func (prob pruebaProblem) NewResult(data []string){
-
-	fmt.Println(data)
+	return ProblemUpdate{alg, nil}
 
 }
 
-func (prob pruebaProblem) Loop(){
+func (prob *pruebaProblem) NewResult(data []string){
+
+	n, _ := strconv.ParseInt(data[0], 0, 0)
+
+	if n > prob.best{
+		prob.best = n
+
+		prob.c <- ProblemUpdate{"", n}
+	}
+
+}
+
+func (prob *pruebaProblem) Loop(){
 	return
 }
