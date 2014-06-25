@@ -24,7 +24,7 @@ func (prob *pruebaProblem) Init(c chan ProblemUpdate) ProblemUpdate{
 
 	prob.c = c
 
-	return ProblemUpdate{alg, nil}
+	return ProblemUpdate{alg, prob.best}
 
 }
 
