@@ -8,7 +8,7 @@ import(
 //Request codes:
 //10: New client
 //20: isLogged
-//30: Delente Client
+//30: Delete Client
 type clientControlRequest struct{	
 	Id uint32
 	Code uint8
@@ -31,24 +31,22 @@ func ClientController(){
 
 	clist = newClientList()
 
-	var id uint32 = 0
-	var err error = nil
+	var req = &clientControlRequest{}
+	var res = clientControlResponse{}
 
 	for {
 		select{
 		
-		case req := <- clientChan:
+		case req = <- clientChan:
 			
 			switch req.Code{
 				case 10:
-					id, err = clist.newClient(req.UserAgent)
+					res.Id, res.Err = clist.newClient(req.UserAgent)
 				case 20:
-					err = clist.isLogged(req.Id, req.UserAgent)
+					res.Err = clist.isLogged(req.Id, req.UserAgent)
 				case 30:
-					err = clist.deleteClient(req.Id, req.UserAgent)
+					res.Err = clist.deleteClient(req.Id, req.UserAgent)
 			}
-
-			res := clientControlResponse{id, err}
 
 			req.Response <- res
 

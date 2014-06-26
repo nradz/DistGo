@@ -2,13 +2,27 @@ package problemController
 
 import(
 	"fmt"
-	"github.com/nradz/DistGo/channels"
 	"github.com/nradz/DistGo/configuration"
 	"github.com/nradz/DistGo/problems"
 	)
 
+type data interface{}
+
+type ProblemControlRequest struct{
+	Id uint32
+	Data []string
+	Response chan ProblemControlResponse
+}
+
+type ProblemControlResponse struct{
+	Alg string
+	Data data
+	Err Error
+}
+
 var(
-	problemChan = channels.ProblemControlChannel()
+	clientChan = make(chan *clientRequest)
+	problemChan = make(chan problems.ProblemUpdate)
 	conf = configuration.Configuration()
 	)
 
@@ -20,7 +34,7 @@ func SimpleProblemController(problem problems.Problem){
 	problemState.LastUpdate = nil
 	problemState.Clients = make(map[uint32]*clientState)
 
-	firstUpdate := problem.Init()
+	firstUpdate := problem.Init(problemChan)
 
 	problemState.Alg = firstUpdate.Alg
 	problemState.LastUpdate = firstUpdate.Data
@@ -28,16 +42,50 @@ func SimpleProblemController(problem problems.Problem){
 	go problem.Loop()//Asynchronous execution of the problem loop (if it exists)
 
 
+	var update = problems.ProblemUpdate{}
+	var req = &ProblemControlRequest{}
+	var res = ProblemControlResponse{}
+
 	for{
 		select{
-		case update := <-problemChan.ReceiveUpdate():
-			fromProblem(update)
+		case update = <-problemChan:
+			problemState.Update(update)
 
-		case req := <-problemChan.ReceiveRequest():
-			fromClient(req, problem)		
+		case req = <-clientChan:
+			if req.Data != nil{
+				res.Err = problemState.NewResult(req.Id, req.Data)
+			} else{
+				res.Alg, res.Data, res.Err = problemState.NewRequest(req.Id)
+			}
+
+			req.Response <- res
+
 		}
 	}
 
+}
+
+
+func NewRequest(id uint32){
+
+	req := &ProblemControlRequest{id, nil, make(chan ProblemControlResponse)}
+	
+	clientChan <- req
+
+	res := <- req.Response
+
+	return res.Alg, res.Data, res.Err
+
+}
+
+func NewResult(id uint32, data []string){
+	req := &ProblemControlRequest{id, data, make(chan ProblemControlResponse)}
+	
+	clientChan <- req
+
+	res := <- req.Response
+
+	return res.Err
 }
 
 /////////fromClient and his functions///////////////
@@ -63,6 +111,9 @@ func fromClient(req *channels.ProblemControlRequest, problem problems.Problem){
 	}
 
 }
+
+
+
 
 func newClient(req *channels.ProblemControlRequest){
 	cState := clientState{false, true, nil}

@@ -34,6 +34,9 @@ func TestNewResult(t *Testing.T){
 
 	NewRequest(5)
 
+	data := make([]string)
+	data[0] = "6"
+
 	err := NewResult(id, data)
 
 	if err != nil{
@@ -43,20 +46,24 @@ func TestNewResult(t *Testing.T){
 
 }
 
-func TestFirstRequest(t *Testing.T){}
+func TestUpdate(t *Testing.T){
+	setup()
 
-func TestFirstRequest(t *Testing.T){}
+	id1 := 5
+	id2 := 6
 
-func TestFirstRequest(t *Testing.T){}
+	NewRequest(5)
+	NewRequest(6)
 
-func TestFirstRequest(t *Testing.T){}
+	data := make([]string)
+	data[0] = "6"	
 
-func TestFirstRequest(t *Testing.T){}
+	err := NewResult(id1, data)
 
-func TestFirstRequest(t *Testing.T){}
+	alg, update, err := NewRequest(id2)
 
-func TestFirstRequest(t *Testing.T){}
 
+}
 
 //aux funcs
 func setup(){

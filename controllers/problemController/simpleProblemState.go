@@ -18,3 +18,4 @@ type clientState struct{
 	ResChan chan channels.ProblemControlResponse /*The channel where the problemController
 	receive the request*/
 }
+
