@@ -5,8 +5,6 @@ import(
 "github.com/nradz/DistGo/problems"
 )
 
-type data interface{}
-
 type simpleProblemState struct{
 	Alg string //The actual algorithm that is executing in the clients
 	LastUpdate data //The last update available
@@ -23,19 +21,19 @@ type clientState struct{
 func newSimpleProblemState() simpleProblemState {
 
 	sp := simpleProblemState{
-		Clients: make(map[uint32] *clientState)
+		Clients: make(map[uint32] *clientState),
 	}
 
 	return sp
 }
 
 func (sp simpleProblemState) NewRequest(id uint32, res chan problemControlResponse){
-	client, ok := simpleProblemState.Clients[id]
+	client, ok := sp.Clients[id]
 	var alg string = ""
 
 	if !ok{
-		client = &clientState{false, true, nil}
-		sp.Client[id] = client
+		client = &clientState{false, false, nil}
+		sp.Clients[id] = client
 		//the first time that the client get the algorithm
 		alg = sp.Alg
 	}
@@ -44,18 +42,18 @@ func (sp simpleProblemState) NewRequest(id uint32, res chan problemControlRespon
 	//Client will be set in standby
 	case client.Updated && !client.Ready:
 		client.Ready = true
-		client.ResChan = req.Response
+		client.ResChan = res
 	//Client will be updated	
 	case !client.Updated && !client.Ready:
 		res <- problemControlResponse{alg, sp.LastUpdate, nil}
 	default:
 		err := errors.New("Unknown Error")
-		up := problemControlResponse{alg, nil, err}
+		res <- problemControlResponse{"", nil, err}
 	}
 }
 
 
-func (sp simpleProblemState) NewResult(id uint32, result data, 
+func (sp simpleProblemState) NewResult(id uint32, result []string, 
   prob problems.Problem, res chan problemControlResponse){
 	//Pass the data to the problem (asynchronous)
 	go prob.NewResult(result)
@@ -72,7 +70,8 @@ func (sp simpleProblemState) Update(update problems.ProblemUpdate){
 		//Client is in standby
 		case client.Ready && client.Updated:
 			client.Ready = false
-			client.Reschan <-problemControlResponse{"", sp.LastUpdate}
+			client.ResChan <-problemControlResponse{"", sp.LastUpdate, nil}
+		
 		case !client.Ready && client.Updated:
 			client.Updated = false
 

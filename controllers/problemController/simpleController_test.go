@@ -2,15 +2,15 @@ package problemController
 
 import(
 "testing"
-"problems"
+"github.com/nradz/DistGo/problems"
 	)
 
 
 
-func TestFirstRequest(t *Testing.T){
+func TestFirstRequest(t *testing.T){
 	setup()
 
-	id := 5
+	var id uint32 = 5
 
 	alg, data, err := NewRequest(id)
 
@@ -27,14 +27,14 @@ func TestFirstRequest(t *Testing.T){
 	}
 }
 
-func TestNewResult(t *Testing.T){
+func TestNewResult(t *testing.T){
 	setup()
 
-	id := 5
+	var id uint32 = 5
 
 	NewRequest(5)
 
-	data := make([]string)
+	data := make([]string, 1)
 	data[0] = "6"
 
 	err := NewResult(id, data)
@@ -46,27 +46,35 @@ func TestNewResult(t *Testing.T){
 
 }
 
-func TestUpdate(t *Testing.T){
+func TestUpdate(t *testing.T){
 	setup()
 
-	id1 := 5
-	id2 := 6
+	var id1 uint32 = 5
+	var id2 uint32 = 6
 
 	NewRequest(5)
 	NewRequest(6)
 
-	data := make([]string)
+	data := make([]string, 1)
 	data[0] = "6"	
 
-	err := NewResult(id1, data)
+	NewResult(id1, data)
 
-	alg, update, err := NewRequest(id2)
+	alg, update, _ := NewRequest(id2)
+
+	if alg != ""{
+		t.Error("alg")
+	}
+
+	if 6 != update.(uint32){
+		t.Error("No update")
+	}
 
 
 }
 
 //aux funcs
 func setup(){
-	go SimpleProblemController(problems.Getproblem("pruebaProblem"))
+	go SimpleProblemController(problems.GetProblem("pruebaProblem"))
 
 }

@@ -1,7 +1,7 @@
 package problemController
 
 import(
-	"fmt"
+	//"fmt"
 	"github.com/nradz/DistGo/configuration"
 	"github.com/nradz/DistGo/problems"
 	)
@@ -17,11 +17,11 @@ type problemControlRequest struct{
 type problemControlResponse struct{
 	Alg string
 	Data data
-	Err Error
+	Err error
 }
 
 var(
-	clientChan = make(chan *clientRequest)
+	clientChan = make(chan *problemControlRequest)
 	problemChan = make(chan problems.ProblemUpdate)
 	conf = configuration.Configuration()
 	)
@@ -47,15 +47,15 @@ func SimpleProblemController(problem problems.Problem){
 	for{
 		select{
 
-		case update = <-problemChan:
+		case update = <- problemChan:
 			problemState.Update(update)
 
-		case req = <-clientChan:
+		case req = <- clientChan:
 			if req.Data != nil{
 				problemState.NewResult(req.Id, req.Data,
-					problem problems.Problem, req.ResChan)
+				 problem, req.Response)
 			} else{
-				problemState.NewRequest(req.Id, req.ResChan)
+				problemState.NewRequest(req.Id, req.Response)
 			}
 		
 		}
@@ -64,7 +64,7 @@ func SimpleProblemController(problem problems.Problem){
 }
 
 
-func NewRequest(id uint32){
+func NewRequest(id uint32) (string, data, error){
 
 	req := &problemControlRequest{id, nil, make(chan problemControlResponse)}
 	
@@ -76,7 +76,7 @@ func NewRequest(id uint32){
 
 }
 
-func NewResult(id uint32, data []string){
+func NewResult(id uint32, data []string) error{
 	req := &problemControlRequest{id, data, make(chan problemControlResponse)}
 	
 	clientChan <- req
