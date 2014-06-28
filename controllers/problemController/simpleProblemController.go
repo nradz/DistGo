@@ -26,7 +26,7 @@ var(
 	conf = configuration.Configuration()
 	)
 
-var problemState = simpleProblemState{}
+var problemState *simpleProblemState
 
 
 func SimpleProblemController(problem problems.Problem){

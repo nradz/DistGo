@@ -3,6 +3,7 @@ package problemController
 import(
 "testing"
 "github.com/nradz/DistGo/problems"
+"time"
 	)
 
 
@@ -52,13 +53,15 @@ func TestUpdate(t *testing.T){
 	var id1 uint32 = 5
 	var id2 uint32 = 6
 
-	NewRequest(5)
-	NewRequest(6)
+	NewRequest(id1)
+	NewRequest(id2)
 
 	data := make([]string, 1)
 	data[0] = "6"	
 
 	NewResult(id1, data)
+
+	time.Sleep(100 *time.Millisecond)
 
 	alg, update, _ := NewRequest(id2)
 
@@ -66,8 +69,8 @@ func TestUpdate(t *testing.T){
 		t.Error("alg")
 	}
 
-	if 6 != update.(uint32){
-		t.Error("No update")
+	if 6 != update.(int64){
+		t.Error("No update:", update)
 	}
 
 

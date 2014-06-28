@@ -1,6 +1,7 @@
 package problemController
 
 import(
+//"fmt"
 "errors"
 "github.com/nradz/DistGo/problems"
 )
@@ -18,16 +19,16 @@ type clientState struct{
 	receive the request*/
 }
 
-func newSimpleProblemState() simpleProblemState {
+func newSimpleProblemState() *simpleProblemState {
 
-	sp := simpleProblemState{
+	sp := &simpleProblemState{
 		Clients: make(map[uint32] *clientState),
 	}
 
 	return sp
 }
 
-func (sp simpleProblemState) NewRequest(id uint32, res chan problemControlResponse){
+func (sp *simpleProblemState) NewRequest(id uint32, res chan problemControlResponse){
 	client, ok := sp.Clients[id]
 	var alg string = ""
 
@@ -43,9 +44,12 @@ func (sp simpleProblemState) NewRequest(id uint32, res chan problemControlRespon
 	case client.Updated && !client.Ready:
 		client.Ready = true
 		client.ResChan = res
+		
 	//Client will be updated	
 	case !client.Updated && !client.Ready:
+		client.Updated = true
 		res <- problemControlResponse{alg, sp.LastUpdate, nil}
+		
 	default:
 		err := errors.New("Unknown Error")
 		res <- problemControlResponse{"", nil, err}
@@ -53,7 +57,7 @@ func (sp simpleProblemState) NewRequest(id uint32, res chan problemControlRespon
 }
 
 
-func (sp simpleProblemState) NewResult(id uint32, result []string, 
+func (sp *simpleProblemState) NewResult(id uint32, result []string, 
   prob problems.Problem, res chan problemControlResponse){
 	//Pass the data to the problem (asynchronous)
 	go prob.NewResult(result)
@@ -62,7 +66,7 @@ func (sp simpleProblemState) NewResult(id uint32, result []string,
 
 }
 
-func (sp simpleProblemState) Update(update problems.ProblemUpdate){
+func (sp *simpleProblemState) Update(update problems.ProblemUpdate){
 	sp.LastUpdate = update.Data
 
 	for _, client := range sp.Clients{
@@ -71,9 +75,11 @@ func (sp simpleProblemState) Update(update problems.ProblemUpdate){
 		case client.Ready && client.Updated:
 			client.Ready = false
 			client.ResChan <-problemControlResponse{"", sp.LastUpdate, nil}
+			
 		
 		case !client.Ready && client.Updated:
 			client.Updated = false
+			
 
 		}
 	}
