@@ -37,13 +37,7 @@ func ConnectionController(){
 		userAgent := header["User-Agent"]
 
 		switch{
-		//Throwed if the request method is not POST	
-		case r.Method != "POST":
-			notPostMethod(&sr, cr, userAgent)
 		
-		case errJSON != nil:
-			notValidJSON(&sr, cr, userAgent)
-
 		case cr.Code == 10:
 			newClient(&sr, cr, userAgent)
 
@@ -55,6 +49,15 @@ func ConnectionController(){
 
 		case cr.Code == 100:
 			deleteClient(&sr, cr, userAgent)
+
+		//Error cases
+			
+		case r.Method != "POST":
+			notPostMethod(&sr, cr, userAgent)
+		
+		case errJSON != nil:
+			notValidJSON(&sr, cr, userAgent)
+
 
 		default:
 			notValidCode(&sr, cr, userAgent)
