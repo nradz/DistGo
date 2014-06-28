@@ -2,11 +2,21 @@ package clientController
 
 import(
 	"testing"
+	"time"
 )
 
+func TestClose(t *testing.T){
+	go ClientController()
+	time.Sleep(100 * time.Millisecond)
+	Close()
+}
 
 func TestNewClient(t *testing.T){
 	go ClientController()
+	defer Close()
+
+	time.Sleep(100 * time.Millisecond)
+
 	header := make([]string,10)
 	_, err := NewClient(header)
 
@@ -17,6 +27,10 @@ func TestNewClient(t *testing.T){
 
 func TestLogged(t *testing.T){
 	go ClientController()
+	defer Close()
+
+	time.Sleep(100 * time.Millisecond)
+
 	header := make([]string, 10)
 	id, _ := NewClient(header)
 
@@ -31,6 +45,10 @@ func TestLogged(t *testing.T){
 
 func TestLoggedNotUserAgent(t *testing.T){
 	go ClientController()
+	defer Close()
+
+	time.Sleep(100 * time.Millisecond)
+
 	header := make([]string, 10)
 	id, _ := NewClient(header)
 
@@ -44,6 +62,10 @@ func TestLoggedNotUserAgent(t *testing.T){
 
 func TestNotLogged(t *testing.T){
 	go ClientController()
+	defer Close()
+
+	time.Sleep(100 * time.Millisecond)
+
 	header := make([]string, 10)
 	
 	err := IsLogged(10, header)
@@ -56,6 +78,10 @@ func TestNotLogged(t *testing.T){
 
 func TestDeletedClient(t *testing.T){
 	go ClientController()
+	defer Close()
+
+	time.Sleep(100 * time.Millisecond)
+
 	header := make([]string,10)
 	id, _ := NewClient(header)
 
@@ -68,6 +94,11 @@ func TestDeletedClient(t *testing.T){
 
 func TestNotDeletedClient(t *testing.T){
 	go ClientController()
+	defer Close()
+
+	time.Sleep(100 * time.Millisecond)
+
+
 	header := make([]string,10)
 
 	err := DeleteClient(10, header)

@@ -22,13 +22,17 @@ type clientControlResponse struct{
 }
 
 var (
-	clientChan = make(chan *clientControlRequest)
-	conf = configuration.Configuration()
-	clist clientList =clientList{}
+	clientChan chan *clientControlRequest
+	closeChan chan bool
+	clist clientList
 	)
 
-func ClientController(){
+var conf = configuration.Configuration()
 
+func ClientController(){
+	//initialize
+	clientChan = make(chan *clientControlRequest)
+	closeChan = make(chan bool)
 	clist = newClientList()
 
 	var req = &clientControlRequest{}
@@ -49,6 +53,10 @@ func ClientController(){
 			}
 
 			req.Response <- res
+
+		//close the goroutine	
+		case <-closeChan:
+			return
 
 		}
 
@@ -91,4 +99,8 @@ func DeleteClient(id uint32, userAgent []string) error{
 
 	return res.Err
 
+}
+
+func Close(){
+	closeChan <- true
 }
