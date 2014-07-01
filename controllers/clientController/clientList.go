@@ -15,7 +15,7 @@ type client struct{
 
 
 //Generate a new ClientList with default values
-func newClientList() clientList{
+func ClientList() clientList{
 
 	cl := clientList{}
 
@@ -49,7 +49,7 @@ func (l clientList) newClient(userAgent []string) (uint32, error){
 
 func (l clientList) isLogged(id uint32, userAgent []string) error{
 	
-	saved, ok := clist[id]
+	saved, ok := l[id]
 
 	eq := reflect.DeepEqual(userAgent, saved.userAgent)
 
@@ -72,7 +72,7 @@ func (l clientList) deleteClient(id uint32, userAgent []string) error{
 	if err := l.isLogged(id, userAgent); err != nil{
 		return err
 	}else{
-		delete(clist, id)
+		delete(l, id)
 		return nil
 	}
 }

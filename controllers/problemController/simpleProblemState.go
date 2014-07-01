@@ -59,10 +59,19 @@ func (sp *simpleProblemState) NewRequest(id uint32, res chan problemControlRespo
 
 func (sp *simpleProblemState) NewResult(id uint32, result []string, 
   prob problems.Problem, res chan problemControlResponse){
-	//Pass the data to the problem (asynchronous)
-	go prob.NewResult(result)
 
-	res <- problemControlResponse{"", nil, nil}
+  	var err error = nil
+
+  	//If the client didn't a first request, he dont have the algorithm.
+  	//So, he can't send a valid result.
+  	if _, ok := sp.Clients[id]; !ok{
+  		err = errors.New("The client do not have the algorithm! He can't send a valid result.")
+  	} else{
+		//Pass the data to the problem (asynchronous)
+		go prob.NewResult(result)
+	}
+
+	res <- problemControlResponse{"", nil, err}
 
 }
 

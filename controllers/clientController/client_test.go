@@ -6,19 +6,19 @@ import(
 )
 
 func TestClose(t *testing.T){
-	go ClientController()
-	time.Sleep(100 * time.Millisecond)
-	Close()
+	c := ClientController()
+	c.Init()
+
+	c.Close()
 }
 
 func TestNewClient(t *testing.T){
-	go ClientController()
-	defer Close()
-
-	time.Sleep(100 * time.Millisecond)
+	c := ClientController()
+	c.Init()
+	defer c.Close()
 
 	header := make([]string,10)
-	_, err := NewClient(header)
+	_, err := c.NewClient(header)
 
 	if err != nil{
 		t.Error(err.Error())
@@ -26,16 +26,17 @@ func TestNewClient(t *testing.T){
 }
 
 func TestLogged(t *testing.T){
-	go ClientController()
-	defer Close()
+	c := ClientController()
+	c.Init()
+	defer c.Close()
 
 	time.Sleep(100 * time.Millisecond)
 
 	header := make([]string, 10)
-	id, _ := NewClient(header)
+	id, _ := c.NewClient(header)
 
 
-	err := IsLogged(id, header)
+	err := c.IsLogged(id, header)
 
 	if err != nil{
 		t.Error(err.Error())
@@ -44,16 +45,15 @@ func TestLogged(t *testing.T){
 }
 
 func TestLoggedNotUserAgent(t *testing.T){
-	go ClientController()
-	defer Close()
-
-	time.Sleep(100 * time.Millisecond)
+	c := ClientController()
+	c.Init()
+	defer c.Close()
 
 	header := make([]string, 10)
-	id, _ := NewClient(header)
+	id, _ := c.NewClient(header)
 
 	otherHeader := make([]string, 11)
-	err := IsLogged(id, otherHeader)
+	err := c.IsLogged(id, otherHeader)
 
 	if err == nil{
 		t.Fail()
@@ -61,14 +61,13 @@ func TestLoggedNotUserAgent(t *testing.T){
 }
 
 func TestNotLogged(t *testing.T){
-	go ClientController()
-	defer Close()
-
-	time.Sleep(100 * time.Millisecond)
+	c := ClientController()
+	c.Init()
+	defer c.Close()
 
 	header := make([]string, 10)
 	
-	err := IsLogged(10, header)
+	err := c.IsLogged(10, header)
 
 	if err == nil{
 		t.Fail()
@@ -77,15 +76,14 @@ func TestNotLogged(t *testing.T){
 }
 
 func TestDeletedClient(t *testing.T){
-	go ClientController()
-	defer Close()
-
-	time.Sleep(100 * time.Millisecond)
+	c := ClientController()
+	c.Init()
+	defer c.Close()
 
 	header := make([]string,10)
-	id, _ := NewClient(header)
+	id, _ := c.NewClient(header)
 
-	err := DeleteClient(id, header)
+	err := c.DeleteClient(id, header)
 
 	if err != nil{
 		t.Error(err.Error())
@@ -93,15 +91,13 @@ func TestDeletedClient(t *testing.T){
 }
 
 func TestNotDeletedClient(t *testing.T){
-	go ClientController()
-	defer Close()
-
-	time.Sleep(100 * time.Millisecond)
-
+	c := ClientController()
+	c.Init()
+	defer c.Close()
 
 	header := make([]string,10)
 
-	err := DeleteClient(10, header)
+	err := c.DeleteClient(10, header)
 
 	if err == nil{
 		t.Fail()

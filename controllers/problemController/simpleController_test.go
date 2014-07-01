@@ -6,20 +6,26 @@ import(
 "time"
 	)
 
-
+func TestClose(t *testing.T){
+	sp := SimpleProblemController(problems.GetProblem("pruebaProblem"))
+	sp.Init()
+	sp.Close()	
+}
 
 func TestFirstRequest(t *testing.T){
-	setup()
+	sp := SimpleProblemController(problems.GetProblem("pruebaProblem"))
+	sp.Init()
+	defer sp.Close()
 
 	var id uint32 = 5
 
-	alg, data, err := NewRequest(id)
+	alg, datos, err := sp.NewRequest(id)
 
 	if alg == ""{
 		t.Error("No alg")
 	}
 
-	if data.(int64) != 0{
+	if datos.(int64) != 0{
 		t.Error("No 0")
 	}
 
@@ -29,41 +35,69 @@ func TestFirstRequest(t *testing.T){
 }
 
 func TestNewResult(t *testing.T){
-	setup()
+	sp := SimpleProblemController(problems.GetProblem("pruebaProblem"))
+	sp.Init()
+	defer sp.Close()
 
 	var id uint32 = 5
 
-	NewRequest(5)
+	sp.NewRequest(id)
 
-	data := make([]string, 1)
-	data[0] = "6"
+	datos := make([]string, 1)
+	datos[0] = "6"
 
-	err := NewResult(id, data)
+	err := sp.NewResult(id, datos)
 
 	if err != nil{
 		t.Error(err.Error())
 	}
 
+}
 
+func TestNotValidResult(t *testing.T){
+	sp := SimpleProblemController(problems.GetProblem("pruebaProblem"))
+	sp.Init()
+	defer sp.Close()
+
+	var id uint32 = 5
+
+	datos := make([]string, 1)
+	datos[0] = "6"
+
+	err := sp.NewResult(id, datos)
+
+	time.Sleep(100 * time.Millisecond)
+
+	if err == nil{
+		t.Error("Not an Error")
+	}
+	
 }
 
 func TestUpdate(t *testing.T){
-	setup()
+	sp := SimpleProblemController(problems.GetProblem("pruebaProblem"))
+	sp.Init()
+	defer sp.Close()
 
 	var id1 uint32 = 5
 	var id2 uint32 = 6
 
-	NewRequest(id1)
-	NewRequest(id2)
+	sp.NewRequest(id1)
+	sp.NewRequest(id2)
 
-	data := make([]string, 1)
-	data[0] = "6"	
+	datos := make([]string, 1)
+	datos[0] = "6"	
 
-	NewResult(id1, data)
+	err := sp.NewResult(id1, datos)
+
+	if err != nil{
+		t.Error("No result:", err)
+	}
+
 
 	time.Sleep(100 *time.Millisecond)
 
-	alg, update, _ := NewRequest(id2)
+	alg, update, _ := sp.NewRequest(id2)
 
 	if alg != ""{
 		t.Error("alg")
@@ -73,11 +107,5 @@ func TestUpdate(t *testing.T){
 		t.Error("No update:", update)
 	}
 
-
-}
-
-//aux funcs
-func setup(){
-	go SimpleProblemController(problems.GetProblem("pruebaProblem"))
 
 }
