@@ -4,9 +4,15 @@ import(
 	"net/http"
 	"fmt"
 	"encoding/json"
-	"github.com/nradz/DistGo/channels"
+	"github.com/nradz/DistGo/controllers/clientController"
+	"github.com/nradz/DistGo/controllers/problemController"
 	"github.com/nradz/DistGo/configuration"
 	)
+
+type connectionController struct{
+	clientChan chan 
+}
+
 
 var(
 	clientChan = channels.ClientControlChannel()
