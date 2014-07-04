@@ -6,7 +6,7 @@ import(
 	"encoding/json"
 	"github.com/nradz/DistGo/controllers/clientController"
 	"github.com/nradz/DistGo/controllers/problemController"
-	"github.com/nradz/DistGo/configuration"
+	"github.com/nradz/DistGo/conf"
 	)
 
 type ConnectionController struct{
@@ -14,10 +14,6 @@ type ConnectionController struct{
 	probCon *problemController.SimpleProblemController
 }
 
-
-var(
-	conf = configuration.Configuration()
-	)
 
 func NewConnectionController(cli *clientController.ClientController, prob *problemController.SimpleProblemController) *ConnectionController{
 	return &ConnectionController{cli, prob}

@@ -1,7 +1,7 @@
 package clientController
 
 import(
-	"github.com/nradz/DistGo/configuration"
+	//"github.com/nradz/DistGo/conf"
 )
 
 
@@ -28,8 +28,6 @@ type clientControlResponse struct{
 	Id uint32
 	Err error
 }
-
-var conf = configuration.Configuration()
 
 func NewClientController() *ClientController{
 	return &ClientController{}

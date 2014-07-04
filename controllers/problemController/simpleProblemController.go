@@ -3,7 +3,7 @@ package problemController
 import(
 	//"fmt"
 	"errors"
-	"github.com/nradz/DistGo/configuration"
+	//"github.com/nradz/DistGo/conf"
 	"github.com/nradz/DistGo/problems"
 	)
 
@@ -28,11 +28,6 @@ type problemControlResponse struct{
 	Data data
 	Err error
 }
-
-var(
-	conf = configuration.Configuration()
-	)
-
 
 func NewSimpleProblemController(prob problems.Problem) *SimpleProblemController{
 	return &SimpleProblemController{
