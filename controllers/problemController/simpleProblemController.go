@@ -2,11 +2,12 @@ package problemController
 
 import(
 	//"fmt"
+	"errors"
 	"github.com/nradz/DistGo/configuration"
 	"github.com/nradz/DistGo/problems"
 	)
 
-type simpleProblemController struct{
+type SimpleProblemController struct{
 	clientChan chan *problemControlRequest
 	problemChan chan problems.ProblemUpdate
 	closeChan chan bool
@@ -33,15 +34,15 @@ var(
 	)
 
 
-func SimpleProblemController(prob problems.Problem) *simpleProblemController{
-	return &simpleProblemController{
+func NewSimpleProblemController(prob problems.Problem) *SimpleProblemController{
+	return &SimpleProblemController{
 		problem: prob,
 	}
 
 }
 
 
-func (s *simpleProblemController) Init(){
+func (s *SimpleProblemController) Init(){
 
 	//initalize
 	s.clientChan = make(chan *problemControlRequest)
@@ -84,7 +85,7 @@ func (s *simpleProblemController) Init(){
 }
 
 
-func (s *simpleProblemController) NewRequest(id uint32) (string, data, error){
+func (s *SimpleProblemController) NewRequest(id uint32) (string, data, error){
 
 	req := &problemControlRequest{id, nil, make(chan problemControlResponse)}
 	
@@ -96,7 +97,11 @@ func (s *simpleProblemController) NewRequest(id uint32) (string, data, error){
 
 }
 
-func (s *simpleProblemController) NewResult(id uint32, data []string) error{
+func (s *SimpleProblemController) NewResult(id uint32, data []string) error{
+	if data == nil{
+		return errors.New("Result with no data")
+	}
+
 	req := &problemControlRequest{id, data, make(chan problemControlResponse)}
 	
 	s.clientChan <- req
@@ -106,6 +111,6 @@ func (s *simpleProblemController) NewResult(id uint32, data []string) error{
 	return res.Err
 }
 
-func (s *simpleProblemController) Close(){
+func (s *SimpleProblemController) Close(){
 	s.closeChan <- true
 }

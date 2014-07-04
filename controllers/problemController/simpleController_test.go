@@ -7,13 +7,13 @@ import(
 	)
 
 func TestClose(t *testing.T){
-	sp := SimpleProblemController(problems.GetProblem("pruebaProblem"))
+	sp := NewSimpleProblemController(problems.GetProblem("pruebaProblem"))
 	sp.Init()
 	sp.Close()	
 }
 
 func TestFirstRequest(t *testing.T){
-	sp := SimpleProblemController(problems.GetProblem("pruebaProblem"))
+	sp := NewSimpleProblemController(problems.GetProblem("pruebaProblem"))
 	sp.Init()
 	defer sp.Close()
 
@@ -35,7 +35,7 @@ func TestFirstRequest(t *testing.T){
 }
 
 func TestNewResult(t *testing.T){
-	sp := SimpleProblemController(problems.GetProblem("pruebaProblem"))
+	sp := NewSimpleProblemController(problems.GetProblem("pruebaProblem"))
 	sp.Init()
 	defer sp.Close()
 
@@ -55,7 +55,7 @@ func TestNewResult(t *testing.T){
 }
 
 func TestNotValidResult(t *testing.T){
-	sp := SimpleProblemController(problems.GetProblem("pruebaProblem"))
+	sp := NewSimpleProblemController(problems.GetProblem("pruebaProblem"))
 	sp.Init()
 	defer sp.Close()
 
@@ -75,7 +75,7 @@ func TestNotValidResult(t *testing.T){
 }
 
 func TestUpdate(t *testing.T){
-	sp := SimpleProblemController(problems.GetProblem("pruebaProblem"))
+	sp := NewSimpleProblemController(problems.GetProblem("pruebaProblem"))
 	sp.Init()
 	defer sp.Close()
 
