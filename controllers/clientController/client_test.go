@@ -6,14 +6,14 @@ import(
 )
 
 func TestClose(t *testing.T){
-	c := ClientController()
+	c := NewClientController()
 	c.Init()
 
 	c.Close()
 }
 
 func TestNewClient(t *testing.T){
-	c := ClientController()
+	c := NewClientController()
 	c.Init()
 	defer c.Close()
 
@@ -26,7 +26,7 @@ func TestNewClient(t *testing.T){
 }
 
 func TestLogged(t *testing.T){
-	c := ClientController()
+	c := NewClientController()
 	c.Init()
 	defer c.Close()
 
@@ -45,7 +45,7 @@ func TestLogged(t *testing.T){
 }
 
 func TestLoggedNotUserAgent(t *testing.T){
-	c := ClientController()
+	c := NewClientController()
 	c.Init()
 	defer c.Close()
 
@@ -61,7 +61,7 @@ func TestLoggedNotUserAgent(t *testing.T){
 }
 
 func TestNotLogged(t *testing.T){
-	c := ClientController()
+	c := NewClientController()
 	c.Init()
 	defer c.Close()
 
@@ -76,7 +76,7 @@ func TestNotLogged(t *testing.T){
 }
 
 func TestDeletedClient(t *testing.T){
-	c := ClientController()
+	c := NewClientController()
 	c.Init()
 	defer c.Close()
 
@@ -91,7 +91,7 @@ func TestDeletedClient(t *testing.T){
 }
 
 func TestNotDeletedClient(t *testing.T){
-	c := ClientController()
+	c := NewClientController()
 	c.Init()
 	defer c.Close()
 

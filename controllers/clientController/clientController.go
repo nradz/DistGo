@@ -6,7 +6,7 @@ import(
 
 
 
-type clientController struct{
+type ClientController struct{
 	clientChan chan *clientControlRequest
 	closeChan chan bool
 	clist clientList
@@ -31,11 +31,11 @@ type clientControlResponse struct{
 
 var conf = configuration.Configuration()
 
-func ClientController() *clientController{
-	return &clientController{}
+func NewClientController() *ClientController{
+	return &ClientController{}
 }
 
-func (c *clientController) Init(){
+func (c *ClientController) Init(){
 	
 	//initialize
 	c.clientChan = make(chan *clientControlRequest)
@@ -76,7 +76,7 @@ func (c *clientController) Init(){
 }
 
 
-func (c *clientController) NewClient(userAgent []string) (uint32, error){
+func (c *ClientController) NewClient(userAgent []string) (uint32, error){
 
 	req := &clientControlRequest{0, 10, userAgent, make(chan clientControlResponse)}
 
@@ -88,7 +88,7 @@ func (c *clientController) NewClient(userAgent []string) (uint32, error){
 }
 
 
-func (c *clientController) IsLogged(id uint32, userAgent []string) error{
+func (c *ClientController) IsLogged(id uint32, userAgent []string) error{
 
 	req := &clientControlRequest{id, 20, userAgent, make(chan clientControlResponse)}
 
@@ -100,7 +100,7 @@ func (c *clientController) IsLogged(id uint32, userAgent []string) error{
 
 }
 
-func (c *clientController) DeleteClient(id uint32, userAgent []string) error{
+func (c *ClientController) DeleteClient(id uint32, userAgent []string) error{
 
 	req := &clientControlRequest{id, 30, userAgent, make(chan clientControlResponse)}
 
@@ -112,6 +112,6 @@ func (c *clientController) DeleteClient(id uint32, userAgent []string) error{
 
 }
 
-func (c *clientController) Close(){
+func (c *ClientController) Close(){
 	c.closeChan <- true
 }
