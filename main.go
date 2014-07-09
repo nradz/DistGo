@@ -4,7 +4,7 @@ import(
 	"fmt"
 	//"github.com/nradz/DistGo/db"
 	//"github.com/nradz/DistGo/distgo_types"
-	"github.com/nradz/DistGo/configuration"
+	"github.com/nradz/DistGo/conf"
 	"github.com/nradz/DistGo/controllers/connectionController"
 	"github.com/nradz/DistGo/controllers/clientController"
 	"github.com/nradz/DistGo/controllers/problemController"
@@ -21,17 +21,20 @@ func main() {
 	//db.StartDB() //initialize the database
 
 	//Load conf
-	configuration.LoadConf()
+	conf.LoadConf()
 
 	//Start Controllers
-	go clientController.ClientController()
+	cli := clientController.NewClientController()
+	cli.Init()
 
-	problem := problems.GetProblem(configuration.Configuration().Problem())
+	problem := problems.GetProblem(conf.Problem())
+	probCon := problemController.NewSimpleProblemController(problem)
+	probCon.Init()
 
-	go problemController.SimpleProblemController(problem)
-
+	con := connectionController.NewConnectionController(cli, probCon)
+	
 	fmt.Println("DistGo is working!")
 
-	connectionController.ConnectionController()
+	con.Init()
   	
 }
