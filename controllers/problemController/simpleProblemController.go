@@ -1,7 +1,6 @@
 package problemController
 
 import(
-	"fmt"
 	"errors"
 	//"github.com/nradz/DistGo/conf"
 	"github.com/nradz/DistGo/problems"
@@ -88,14 +87,11 @@ func (s *SimpleProblemController) NewRequest(id uint32) (string, data, error){
 
 	res := <- req.Response
 
-	fmt.Println("First response")
-
 	return res.Alg, res.Data, res.Err
 
 }
 
 func (s *SimpleProblemController) NewResult(id uint32, data []string) error{
-	fmt.Println("Result:", data)
 	if data == nil{
 		return errors.New("Result with no data")
 	}
