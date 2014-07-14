@@ -20,9 +20,6 @@ func main() {
 
 	//db.StartDB() //initialize the database
 
-	//Load conf
-	conf.LoadConf()
-
 	//Start Controllers
 	cli := clientController.NewClientController()
 	cli.Init()

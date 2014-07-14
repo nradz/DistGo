@@ -1,3 +1,5 @@
+//Package conf loads automatically the configuration
+//of DistGo from the file "$HOME/.DistGo/DistGo.conf"
 package conf
 import(
 	"os"
@@ -13,7 +15,7 @@ type configFile struct{
 	Problem string
 }
 
-//default configuration
+//configuration vars
 var(
 	ip string
 	port string
@@ -22,10 +24,11 @@ var(
 )
 
 
-//Temporal useless func
-func LoadConf(){
+//Load the configuration from the file 
+//"$HOME/.DistGo/DistGo.conf"
+func init(){
 	root := os.Getenv("HOME")
-	file, err := os.Open(root+"/.DistGo/conf.json")
+	file, err := os.Open(root+"/.DistGo/DistGo.conf")
 	if err != nil{
 		log.Fatal(err)
 	}
@@ -44,18 +47,23 @@ func LoadConf(){
 	problem = data.Problem
 }
 
+//Return the ip of the server
 func Ip() string{
 	return ip
 }
 
+//Return the port where DistGo is listening
 func Port() string{
 	return port
 }
 
+//Return the content of the header field
+//"Access-Control-Allow-Origin" of the responses
 func Cors() string{
 	return cors
 }
 
+//Return the name of the problem that is being executed
 func Problem() string{
 	return problem
 }
