@@ -1,15 +1,23 @@
+//Package clientController implements a controller to
+//manage the clients of the system.
 package clientController
 
 import(
 	//"github.com/nradz/DistGo/conf"
+	"errors"
 )
 
-
+const(
+	notStartedError string = "clientController is not started!" //the error 
+	//that will be returned if clientController is not started.
+)
 
 type ClientController struct{
-	clientChan chan *clientControlRequest
-	closeChan chan bool
-	clist clientList
+	started bool //started is true when clientController is running
+	clientChan chan *clientControlRequest //it is used to send data 
+	//from the functions to the main loop
+	closeChan chan bool //It is used to finish the main loop
+	clist clientList //It is the struct where the clients are saved
 }
 
 
@@ -18,21 +26,26 @@ type ClientController struct{
 //20: isLogged
 //30: Delete Client
 type clientControlRequest struct{	
-	Id uint32
-	Code uint8
-	UserAgent []string	
-	Response chan clientControlResponse
+	Id uint32 //The id of the client
+	Code uint8 //Code determines the type of the request
+	UserAgent []string	//The userAgent of the client.
+	Response chan clientControlResponse //The channel where the controller
+	//will response.
 }
 
 type clientControlResponse struct{
-	Id uint32
+	Id uint32 //The id of the client. Currently, it is only important
+	//when the request was by newClient function
 	Err error
 }
 
-func NewClientController() *ClientController{
+//return a new clientController struct.
+func New() *ClientController{
 	return &ClientController{}
 }
 
+//Init Initializes in another goroutine the main loop that manages
+//the clients.
 func (c *ClientController) Init(){
 	
 	//initialize
@@ -71,10 +84,16 @@ func (c *ClientController) Init(){
 
 	}()
 
+	c.started = true
+
 }
 
-
+//NewClient saves a new client and returns his "id". userAgent is used 
+//to reduce the possibility of a phishing attack.
 func (c *ClientController) NewClient(userAgent []string) (uint32, error){
+	if !c.started{
+		return 0, errors.New(notStartedError)
+	}
 
 	req := &clientControlRequest{0, 10, userAgent, make(chan clientControlResponse)}
 
@@ -85,8 +104,11 @@ func (c *ClientController) NewClient(userAgent []string) (uint32, error){
 	return res.Id, res.Err
 }
 
-
+//IsLogged checks if a client is registered. It is true if error is "nil".
 func (c *ClientController) IsLogged(id uint32, userAgent []string) error{
+	if !c.started{
+		return errors.New(notStartedError)
+	}
 
 	req := &clientControlRequest{id, 20, userAgent, make(chan clientControlResponse)}
 
@@ -98,7 +120,11 @@ func (c *ClientController) IsLogged(id uint32, userAgent []string) error{
 
 }
 
+//DeleteClient removes a client from the system.
 func (c *ClientController) DeleteClient(id uint32, userAgent []string) error{
+	if !c.started{
+		return errors.New(notStartedError)
+	}
 
 	req := &clientControlRequest{id, 30, userAgent, make(chan clientControlResponse)}
 
@@ -110,6 +136,14 @@ func (c *ClientController) DeleteClient(id uint32, userAgent []string) error{
 
 }
 
-func (c *ClientController) Close(){
+//Close finishes the main loop.
+func (c *ClientController) Close() error{
+	if !c.started{
+		return errors.New(notStartedError)
+	}
+
+	c.started = false
 	c.closeChan <- true
+
+	return nil
 }

@@ -1,6 +1,7 @@
 //Package conf loads automatically the configuration
 //of DistGo from the file "$HOME/.DistGo/DistGo.conf"
 package conf
+
 import(
 	"os"
 	"encoding/json"

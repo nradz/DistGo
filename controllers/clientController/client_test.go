@@ -6,14 +6,14 @@ import(
 )
 
 func TestClose(t *testing.T){
-	c := NewClientController()
+	c := New()
 	c.Init()
 
 	c.Close()
 }
 
 func TestNewClient(t *testing.T){
-	c := NewClientController()
+	c := New()
 	c.Init()
 	defer c.Close()
 
@@ -26,7 +26,7 @@ func TestNewClient(t *testing.T){
 }
 
 func TestLogged(t *testing.T){
-	c := NewClientController()
+	c := New()
 	c.Init()
 	defer c.Close()
 
@@ -45,7 +45,7 @@ func TestLogged(t *testing.T){
 }
 
 func TestLoggedNotUserAgent(t *testing.T){
-	c := NewClientController()
+	c := New()
 	c.Init()
 	defer c.Close()
 
@@ -61,7 +61,7 @@ func TestLoggedNotUserAgent(t *testing.T){
 }
 
 func TestNotLogged(t *testing.T){
-	c := NewClientController()
+	c := New()
 	c.Init()
 	defer c.Close()
 
@@ -76,7 +76,7 @@ func TestNotLogged(t *testing.T){
 }
 
 func TestDeletedClient(t *testing.T){
-	c := NewClientController()
+	c := New()
 	c.Init()
 	defer c.Close()
 
@@ -91,7 +91,7 @@ func TestDeletedClient(t *testing.T){
 }
 
 func TestNotDeletedClient(t *testing.T){
-	c := NewClientController()
+	c := New()
 	c.Init()
 	defer c.Close()
 
@@ -104,4 +104,29 @@ func TestNotDeletedClient(t *testing.T){
 	}
 }
 
+func TestNotInitialized(t *testing.T){
+	c := New()
+
+	header := make([]string, 10)
+
+	id, err := c.NewClient(header)
+	if err == nil{
+		t.Fatal("NewClient")
+	}
+	
+	err = c.IsLogged(id,header)
+	if err == nil{
+		t.Fatal("IsLogged")
+	}
+
+	err = c.DeleteClient(id,header)
+	if err == nil{
+		t.Fatal("DeleteClient")
+	}
+
+	err = c.Close()
+	if err == nil{
+		t.Fatal("Close")
+	}
+}
 
