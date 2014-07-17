@@ -26,7 +26,8 @@ type ClientController struct{
 //20: isLogged
 //30: Delete Client
 type clientControlRequest struct{	
-	Id uint32 //The id of the client
+	Id uint16 //The id of the client
+	key uint32 //The key of the client
 	Code uint8 //Code determines the type of the request
 	UserAgent []string	//The userAgent of the client.
 	Response chan clientControlResponse //The channel where the controller
@@ -34,7 +35,9 @@ type clientControlRequest struct{
 }
 
 type clientControlResponse struct{
-	Id uint32 //The id of the client. Currently, it is only important
+	Id uint16 //The id of the client. Currently, it is only important
+	//when the request was by newClient function
+	Key uint32 //The key of the client. Currently, it is only important
 	//when the request was by newClient function
 	Err error
 }
@@ -67,9 +70,9 @@ func (c *ClientController) Init(){
 					case 10:
 						res.Id, res.Err = c.clist.newClient(req.UserAgent)
 					case 20:
-						res.Err = c.clist.isLogged(req.Id, req.UserAgent)
+						res.Err = c.clist.isLogged(req.Id, req.Key, req.UserAgent)
 					case 30:
-						res.Err = c.clist.deleteClient(req.Id, req.UserAgent)
+						res.Err = c.clist.deleteClient(req.Id, req.Key, req.UserAgent)
 				}
 
 				req.Response <- res
@@ -90,27 +93,27 @@ func (c *ClientController) Init(){
 
 //NewClient saves a new client and returns his "id". userAgent is used 
 //to reduce the possibility of a phishing attack.
-func (c *ClientController) NewClient(userAgent []string) (uint32, error){
+func (c *ClientController) NewClient(header map[string][]string) (uint16, uint32, error){
 	if !c.started{
 		return 0, errors.New(notStartedError)
 	}
 
-	req := &clientControlRequest{0, 10, userAgent, make(chan clientControlResponse)}
+	req := &clientControlRequest{0, key, 10, header['User-Agent'], make(chan clientControlResponse)}
 
 	c.clientChan <- req
 
 	res := <- req.Response
 
-	return res.Id, res.Err
+	return res.Id, res.Key res.Err
 }
 
 //IsLogged checks if a client is registered. It is true if error is "nil".
-func (c *ClientController) IsLogged(id uint32, userAgent []string) error{
+func (c *ClientController) IsLogged(id uint16, key uint32, header map[string][]string) error{
 	if !c.started{
 		return errors.New(notStartedError)
 	}
 
-	req := &clientControlRequest{id, 20, userAgent, make(chan clientControlResponse)}
+	req := &clientControlRequest{id, key, 20, header['User-Agent'], make(chan clientControlResponse)}
 
 	c.clientChan <- req
 
@@ -121,12 +124,12 @@ func (c *ClientController) IsLogged(id uint32, userAgent []string) error{
 }
 
 //DeleteClient removes a client from the system.
-func (c *ClientController) DeleteClient(id uint32, userAgent []string) error{
+func (c *ClientController) DeleteClient(id uint16, key uint32, header map[string][]string) error{
 	if !c.started{
 		return errors.New(notStartedError)
 	}
 
-	req := &clientControlRequest{id, 30, userAgent, make(chan clientControlResponse)}
+	req := &clientControlRequest{id, key, 30, header['User-Agent'], make(chan clientControlResponse)}
 
 	c.clientChan <- req
 
