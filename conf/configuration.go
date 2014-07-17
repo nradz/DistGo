@@ -10,6 +10,7 @@ import(
 
 
 type configFile struct{
+	NClients uint16
 	Ip string
 	Port string
 	Cors string
@@ -18,6 +19,7 @@ type configFile struct{
 
 //configuration vars
 var(
+	nClients uint16
 	ip string
 	port string
 	cors string
@@ -42,10 +44,15 @@ func init(){
 		log.Fatal(err)
 	}
 
+	nClients = data.NClients
 	ip = data.Ip
 	port = data.Port
 	cors = data.Cors
 	problem = data.Problem
+}
+
+func NClients() uint16{
+	return nClients
 }
 
 //Return the ip of the server
