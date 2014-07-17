@@ -18,10 +18,14 @@ func TestNewClient(t *testing.T){
 	defer c.Close()
 
 	header := make(map[string][]string)
-	_, _, err := c.NewClient(header)
+	id, _, err := c.NewClient(header)
+
+	if id != 0{
+		t.Error("Id is not 0")
+	}
 
 	if err != nil{
-		t.Error(err.Error())
+		t.Error(err)
 	} 
 }
 
@@ -32,7 +36,7 @@ func TestLogged(t *testing.T){
 
 	time.Sleep(100 * time.Millisecond)
 
-	header := make([]string, 10)
+	header := make(map [string][]string)
 	id, key, _ := c.NewClient(header)
 
 
@@ -53,7 +57,7 @@ func TestLoggedNotHeader(t *testing.T){
 	id, key, _ := c.NewClient(header)
 
 	otherHeader := make(map [string][]string)
-	otherheader["ala"] = nil
+	otherHeader["User-Agent"] = []string{"nini"}
 	err := c.IsLogged(id, key, otherHeader)
 
 	if err == nil{
@@ -67,9 +71,13 @@ func TestLoggedNotKey(t *testing.T){
 	defer c.Close()
 
 	header := make(map [string][]string)
-	id, key, _ := c.NewClient(header)
+	id, _, _ := c.NewClient(header)
 
 	err := c.IsLogged(id, 76543, header)
+
+	if err == nil{
+		t.Fail()
+	}
 }
 
 func TestNotLogged(t *testing.T){
@@ -119,7 +127,7 @@ func TestNotDeletedClient(t *testing.T){
 func TestNotInitialized(t *testing.T){
 	c := New()
 
-	header := make([]string, 10)
+	header := make(map [string][]string)
 
 	id, key, err := c.NewClient(header)
 	if err == nil{

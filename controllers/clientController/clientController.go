@@ -27,7 +27,7 @@ type ClientController struct{
 //30: Delete Client
 type clientControlRequest struct{	
 	Id uint16 //The id of the client
-	key uint32 //The key of the client
+	Key uint32 //The key of the client
 	Code uint8 //Code determines the type of the request
 	UserAgent []string	//The userAgent of the client.
 	Response chan clientControlResponse //The channel where the controller
@@ -68,7 +68,7 @@ func (c *ClientController) Init(){
 				
 				switch req.Code{
 					case 10:
-						res.Id, res.Err = c.clist.newClient(req.UserAgent)
+						res.Id, res.Key, res.Err = c.clist.newClient(req.UserAgent)
 					case 20:
 						res.Err = c.clist.isLogged(req.Id, req.Key, req.UserAgent)
 					case 30:
@@ -95,16 +95,16 @@ func (c *ClientController) Init(){
 //to reduce the possibility of a phishing attack.
 func (c *ClientController) NewClient(header map[string][]string) (uint16, uint32, error){
 	if !c.started{
-		return 0, errors.New(notStartedError)
+		return 0, 0, errors.New(notStartedError)
 	}
 
-	req := &clientControlRequest{0, key, 10, header['User-Agent'], make(chan clientControlResponse)}
+	req := &clientControlRequest{0, 0, 10, header["User-Agent"], make(chan clientControlResponse)}
 
 	c.clientChan <- req
 
 	res := <- req.Response
 
-	return res.Id, res.Key res.Err
+	return res.Id, res.Key, res.Err
 }
 
 //IsLogged checks if a client is registered. It is true if error is "nil".
@@ -113,7 +113,7 @@ func (c *ClientController) IsLogged(id uint16, key uint32, header map[string][]s
 		return errors.New(notStartedError)
 	}
 
-	req := &clientControlRequest{id, key, 20, header['User-Agent'], make(chan clientControlResponse)}
+	req := &clientControlRequest{id, key, 20, header["User-Agent"], make(chan clientControlResponse)}
 
 	c.clientChan <- req
 
@@ -129,7 +129,7 @@ func (c *ClientController) DeleteClient(id uint16, key uint32, header map[string
 		return errors.New(notStartedError)
 	}
 
-	req := &clientControlRequest{id, key, 30, header['User-Agent'], make(chan clientControlResponse)}
+	req := &clientControlRequest{id, key, 30, header["User-Agent"], make(chan clientControlResponse)}
 
 	c.clientChan <- req
 
