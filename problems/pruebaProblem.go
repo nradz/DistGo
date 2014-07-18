@@ -5,6 +5,11 @@ import(
 	//"fmt"
 	)
 
+
+func init(){
+	AddProblem("pruebaProblem", &pruebaProblem{})
+}
+
 type pruebaProblem struct{
 	best int64
 	c chan ProblemUpdate
@@ -18,7 +23,7 @@ const(
 	`	
 	)
 
-func (prob *pruebaProblem) Init(c chan ProblemUpdate) ProblemUpdate{
+func (prob *pruebaProblem) Start(c chan ProblemUpdate) ProblemUpdate{
 
 	prob.best = 0
 
@@ -28,7 +33,7 @@ func (prob *pruebaProblem) Init(c chan ProblemUpdate) ProblemUpdate{
 
 }
 
-func (prob *pruebaProblem) NewResult(data []string){
+func (prob *pruebaProblem) NewResult(data []string, lastUpdate uint32){
 
 	n, _ := strconv.ParseInt(data[0], 0, 0)
 

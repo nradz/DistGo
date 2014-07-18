@@ -6,13 +6,24 @@ import(
 	"time"
 )
 
-func TestInit(t *testing.T){
+
+func TestGetProblem(t *testing.T){
+
+	res := GetProblem("pruebaProblem")
+
+	if res == nil{
+		t.Error(res)
+	}
+}
+
+
+func TestStart(t *testing.T){
 
 	prob := pruebaProblem{}
 
 	c := make(chan ProblemUpdate)
 
-	prob.Init(c)
+	prob.Start(c)
 
 }
 
@@ -22,14 +33,16 @@ func TestNewBetterResult(t *testing.T){
 
 	c := make(chan ProblemUpdate)
 
-	prob.Init(c)
+	prob.Start(c)
 
 	data := make([]string, 1)
 	data[0] = "14"
 
-	go prob.NewResult(data)
+	var lastUpdate uint32 = 1
 
-	res := <- c
+	go prob.NewResult(data, lastUpdate)
+
+	res := <- c //a problemUpdate
 
 	if res.Data.(int64) != 14{
 		t.Error(res.Data)
@@ -43,12 +56,14 @@ func TestNewWorseResult(t *testing.T){
 
 	c := make(chan ProblemUpdate)
 
-	prob.Init(c)
+	prob.Start(c)
 
 	data := make([]string, 1)
 	data[0] = "14"
 
-	go prob.NewResult(data)
+	var lastUpdate uint32 = 1
+
+	go prob.NewResult(data, lastUpdate)
 
 	time.Sleep(100 * time.Millisecond)
 
@@ -63,7 +78,7 @@ func TestNewWorseResult(t *testing.T){
 
 	data[0] = "5"
 
-	go prob.NewResult(data)
+	go prob.NewResult(data, lastUpdate)
 
 	time.Sleep(100 * time.Millisecond)
 
