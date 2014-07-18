@@ -79,7 +79,7 @@ func (s *SimpleProblemController) Init(){
 }
 
 
-func (s *SimpleProblemController) NewRequest(id uint32) (string, data, error){
+func (s *SimpleProblemController) NewRequest(id uint32) (string, data, uint32, error){
 
 	req := &problemControlRequest{id, nil, make(chan problemControlResponse)}
 	

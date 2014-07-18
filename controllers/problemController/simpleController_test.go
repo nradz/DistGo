@@ -17,9 +17,11 @@ func TestFirstRequest(t *testing.T){
 	sp.Init()
 	defer sp.Close()
 
-	var id uint32 = 5
+	var id uint32 = 1
 
-	alg, datos, err := sp.NewRequest(id)
+	var lastUpdate uint32 = 0
+
+	alg, datos, NUpdate, err := sp.NewRequest(id, lastUpdate)
 
 	if alg == ""{
 		t.Error("No alg")
@@ -27,6 +29,10 @@ func TestFirstRequest(t *testing.T){
 
 	if datos.(int64) != 0{
 		t.Error("No 0")
+	}
+
+	if NUpdate != 1{
+		t.Error("NUpdate is not 1")
 	}
 
 	if err != nil{
@@ -39,14 +45,16 @@ func TestNewResult(t *testing.T){
 	sp.Init()
 	defer sp.Close()
 
-	var id uint32 = 5
+	var id uint32 = 1
 
-	sp.NewRequest(id)
+	var lastUpdate uint32 = 0
+
+	sp.NewRequest(id, lastUpdate)
 
 	datos := make([]string, 1)
 	datos[0] = "6"
 
-	err := sp.NewResult(id, datos)
+	err := sp.NewResult(id, lastUpdate, datos)
 
 	if err != nil{
 		t.Error(err.Error())
@@ -54,33 +62,13 @@ func TestNewResult(t *testing.T){
 
 }
 
-func TestNotValidResult(t *testing.T){
-	sp := NewSimpleProblemController(problems.GetProblem("pruebaProblem"))
-	sp.Init()
-	defer sp.Close()
-
-	var id uint32 = 5
-
-	datos := make([]string, 1)
-	datos[0] = "6"
-
-	err := sp.NewResult(id, datos)
-
-	time.Sleep(100 * time.Millisecond)
-
-	if err == nil{
-		t.Error("Not an Error")
-	}
-	
-}
-
 func TestUpdate(t *testing.T){
 	sp := NewSimpleProblemController(problems.GetProblem("pruebaProblem"))
 	sp.Init()
 	defer sp.Close()
 
-	var id1 uint32 = 5
-	var id2 uint32 = 6
+	var id1 uint16 = 5
+	var id2 uint16 = 6
 
 	sp.NewRequest(id1)
 	sp.NewRequest(id2)

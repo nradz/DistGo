@@ -11,7 +11,7 @@ import(
 //The clienList type is a map where the clients are indexed 
 //by their "id".
 type clientList struct{
-	nextId uint16 //The next position to the last one used
+	nextId uint32 //The next position to the last one used
 	list []client //The list where the clients are saved
 }
 
@@ -37,10 +37,10 @@ func ClientList() clientList{
 
 //newClient saves a new client into the struct. userAgent is used 
 //to reduce the possibility of a phishing attack.
-func (cl clientList) newClient(userAgent []string) (uint16, uint32, error){
+func (cl clientList) newClient(userAgent []string) (uint32, uint32, error){
 
 	//Search an available position in the clientLst
-	var id uint16 = cl.nextId
+	var id uint32 = cl.nextId
 	var found bool = false
 	for !found{
 		switch{
@@ -73,7 +73,7 @@ func (cl clientList) newClient(userAgent []string) (uint16, uint32, error){
 }
 
 //IsLogged checks if a client is registered. It is true if error is "nil".
-func (cl clientList) isLogged(id uint16, key uint32, userAgent []string) error{
+func (cl clientList) isLogged(id uint32, key uint32, userAgent []string) error{
 	
 	if id >= conf.NClients(){
 		return errors.New("Id is not valid")
@@ -98,7 +98,7 @@ func (cl clientList) isLogged(id uint16, key uint32, userAgent []string) error{
 }
 
 //deleteClient removes a client from the struct
-func (cl clientList) deleteClient(id uint16, key uint32, userAgent []string) error{
+func (cl clientList) deleteClient(id uint32, key uint32, userAgent []string) error{
 
 	if err := cl.isLogged(id, key, userAgent); err != nil{
 		return err

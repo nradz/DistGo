@@ -26,7 +26,7 @@ type ClientController struct{
 //20: isLogged
 //30: Delete Client
 type clientControlRequest struct{	
-	Id uint16 //The id of the client
+	Id uint32 //The id of the client
 	Key uint32 //The key of the client
 	Code uint8 //Code determines the type of the request
 	UserAgent []string	//The userAgent of the client.
@@ -35,7 +35,7 @@ type clientControlRequest struct{
 }
 
 type clientControlResponse struct{
-	Id uint16 //The id of the client. Currently, it is only important
+	Id uint32 //The id of the client. Currently, it is only important
 	//when the request was by newClient function
 	Key uint32 //The key of the client. Currently, it is only important
 	//when the request was by newClient function
@@ -93,7 +93,7 @@ func (c *ClientController) Init(){
 
 //NewClient saves a new client and returns his "id". userAgent is used 
 //to reduce the possibility of a phishing attack.
-func (c *ClientController) NewClient(header map[string][]string) (uint16, uint32, error){
+func (c *ClientController) NewClient(header map[string][]string) (uint32, uint32, error){
 	if !c.started{
 		return 0, 0, errors.New(notStartedError)
 	}
@@ -108,7 +108,7 @@ func (c *ClientController) NewClient(header map[string][]string) (uint16, uint32
 }
 
 //IsLogged checks if a client is registered. It is true if error is "nil".
-func (c *ClientController) IsLogged(id uint16, key uint32, header map[string][]string) error{
+func (c *ClientController) IsLogged(id uint32, key uint32, header map[string][]string) error{
 	if !c.started{
 		return errors.New(notStartedError)
 	}
@@ -124,7 +124,7 @@ func (c *ClientController) IsLogged(id uint16, key uint32, header map[string][]s
 }
 
 //DeleteClient removes a client from the system.
-func (c *ClientController) DeleteClient(id uint16, key uint32, header map[string][]string) error{
+func (c *ClientController) DeleteClient(id uint32, key uint32, header map[string][]string) error{
 	if !c.started{
 		return errors.New(notStartedError)
 	}

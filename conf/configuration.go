@@ -10,7 +10,7 @@ import(
 
 
 type configFile struct{
-	NClients uint16
+	NClients uint32
 	Ip string
 	Port string
 	Cors string
@@ -19,7 +19,7 @@ type configFile struct{
 
 //configuration vars
 var(
-	nClients uint16
+	nClients uint32
 	ip string
 	port string
 	cors string
@@ -51,7 +51,7 @@ func init(){
 	problem = data.Problem
 }
 
-func NClients() uint16{
+func NClients() uint32{
 	return nClients
 }
 

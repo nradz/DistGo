@@ -4,12 +4,13 @@ import(
 //"fmt"
 "errors"
 "github.com/nradz/DistGo/problems"
+"github.com/nradz/DistGo/conf"
 )
 
 type simpleProblemState struct{
 	Alg string //The actual algorithm that is executing in the clients
 	LastUpdate data //The last update available
-	Clients map[uint32]*clientState //Map of the clients with their state
+	Clients []*clientState //Map of the clients with their state
 }
 
 type clientState struct{
@@ -22,7 +23,7 @@ type clientState struct{
 func newSimpleProblemState() *simpleProblemState {
 
 	sp := &simpleProblemState{
-		Clients: make(map[uint32] *clientState),
+		Clients: make([]*clientState, conf.NClients()),
 	}
 
 	return sp
