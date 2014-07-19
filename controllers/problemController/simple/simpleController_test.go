@@ -7,13 +7,13 @@ import(
 	)
 
 func TestClose(t *testing.T){
-	sp := NewSimpleProblemController(problems.GetProblem("pruebaProblem"))
+	sp := New(problems.GetProblem("pruebaProblem"))
 	sp.Init()
 	sp.Close()	
 }
 
 func TestFirstRequest(t *testing.T){
-	sp := NewSimpleProblemController(problems.GetProblem("pruebaProblem"))
+	sp := New(problems.GetProblem("pruebaProblem"))
 	sp.Init()
 	defer sp.Close()
 
@@ -21,7 +21,7 @@ func TestFirstRequest(t *testing.T){
 
 	var lastUpdate uint32 = 0
 
-	alg, datos, NUpdate, err := sp.NewRequest(id, lastUpdate)
+	alg, datos, nUpdate, err := sp.NewRequest(id, lastUpdate)
 
 	if alg == ""{
 		t.Error("No alg")
@@ -31,7 +31,7 @@ func TestFirstRequest(t *testing.T){
 		t.Error("No 0")
 	}
 
-	if NUpdate != 1{
+	if nUpdate != 1{
 		t.Error("NUpdate is not 1")
 	}
 
@@ -41,15 +41,13 @@ func TestFirstRequest(t *testing.T){
 }
 
 func TestNewResult(t *testing.T){
-	sp := NewSimpleProblemController(problems.GetProblem("pruebaProblem"))
+	sp := New(problems.GetProblem("pruebaProblem"))
 	sp.Init()
 	defer sp.Close()
 
 	var id uint32 = 1
 
-	var lastUpdate uint32 = 0
-
-	sp.NewRequest(id, lastUpdate)
+	var lastUpdate uint32 = 1
 
 	datos := make([]string, 1)
 	datos[0] = "6"
@@ -63,36 +61,38 @@ func TestNewResult(t *testing.T){
 }
 
 func TestUpdate(t *testing.T){
-	sp := NewSimpleProblemController(problems.GetProblem("pruebaProblem"))
+	sp := New(problems.GetProblem("pruebaProblem"))
 	sp.Init()
 	defer sp.Close()
 
-	var id1 uint16 = 5
-	var id2 uint16 = 6
-
-	sp.NewRequest(id1)
-	sp.NewRequest(id2)
+	var id1 uint32 = 5
+	var lastUpdate1 uint32 = 1
+	var id2 uint32 = 6
+	var lastUpdate2 uint32 = 1
 
 	datos := make([]string, 1)
 	datos[0] = "6"	
 
-	err := sp.NewResult(id1, datos)
+	err := sp.NewResult(id1, lastUpdate1, datos)
 
 	if err != nil{
 		t.Error("No result:", err)
 	}
 
-
 	time.Sleep(100 *time.Millisecond)
 
-	alg, update, _ := sp.NewRequest(id2)
+	alg, data, nUpdate, _ := sp.NewRequest(id2, lastUpdate)
 
 	if alg != ""{
-		t.Error("alg")
+		t.Error("alg:", alg)
 	}
 
-	if 6 != update.(int64){
-		t.Error("No update:", update)
+	if nUpdate != 2{
+		t.Error("Incorrect nUpdate:", nUpdate)
+	}
+
+	if 6 != data.(int64){
+		t.Error("No update:", data)
 	}
 
 
