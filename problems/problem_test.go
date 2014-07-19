@@ -14,8 +14,19 @@ func TestGetProblem(t *testing.T){
 	if res == nil{
 		t.Error(res)
 	}
+
 }
 
+func TestType(t *testing.T){
+
+	prob := pruebaProblem{}
+
+	res := prob.Type()
+
+	if res != "simple"{
+		t.Error("Not match:", res)
+	}
+}
 
 func TestStart(t *testing.T){
 
@@ -44,6 +55,9 @@ func TestNewBetterResult(t *testing.T){
 
 	res := <- c //a problemUpdate
 
+	if res.Number != 2{
+		t.Error("Incorrect Number:", res.Number)
+	}
 	if res.Data.(int64) != 14{
 		t.Error(res.Data)
 
