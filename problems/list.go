@@ -1,9 +1,9 @@
 package problems
 
-var problemMap = make(map[string]*Problem)
+var problemMap = make(map[string]Problem)
 
 //Getproblem returns a problem pointer by his name.
-func GetProblem(prob string) *Problem{
+func GetProblem(prob string) Problem{
 
 	saved, ok := problemMap[prob]
 
@@ -17,5 +17,5 @@ func GetProblem(prob string) *Problem{
 
 //AddProblem insert a problem in the list of available problems.
 func AddProblem(name string, prob Problem){
-	problemMap[name] = &prob
+	problemMap[name] = prob
 }

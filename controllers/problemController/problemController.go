@@ -3,6 +3,7 @@ package problemController
 
 import(
 	"problems"
+	"github.com/nradz/DistGo/Controllers/problemController/simple"
 )
 
 

@@ -6,68 +6,81 @@ import(
 	"github.com/nradz/DistGo/problems"
 	)
 
-type SimpleProblemController struct{
-	clientChan chan *problemControlRequest
-	problemChan chan problems.ProblemUpdate
-	closeChan chan bool
-	problem problems.Problem
-	problemState *simpleProblemState
+type Simple struct{
+	clientChan chan *request //It is used 
+	//to send data from the functions to the main loop
+	problemChan chan problems.ProblemUpdate //It is used
+	//to send data from the problem to the main loop
+	standbyChan chan *request //If a client is updated, he will 
+	//be set in standby.
+	closeChan chan bool //It is used to finish the main loop
+	problem problems.Problem //The problem that is been executed
+	alg string //The actual algorithm that is executing in the clients
+	updateData data //The last update available
+	updateNumber uint32//The number of the update
 }
 
+//Generic data
 type data interface{}
 
-type problemControlRequest struct{
-	Id uint32
-	Data []string
-	Response chan problemControlResponse
+//It is the struct used to send data from the functions 
+//to the main loop
+type request struct{
+	Id uint32 //Id of the client
+	Data []string //Data of the client (If the request is 
+		//a new result)
+	LastNumber uint32 //The number of the last update that
+	//the client has received
+	Response chan response //The chan where the main loop will 
+	//response to the functions
 }
 
-type problemControlResponse struct{
-	Alg string
-	Data data
+//The response struct
+type response struct{
+	Alg string //The client algorithm
+	Data data //The update data
+	Number uint32 //Number of the update
 	Err error
 }
 
-func NewSimpleProblemController(prob problems.Problem) *SimpleProblemController{
-	return &SimpleProblemController{
+//Return a new simple problem controller
+func New(prob problems.Problem) *Simple{
+	return &Simple{
 		problem: prob,
 	}
 
 }
 
-
-func (s *SimpleProblemController) Init(){
+//it initializes the controller and starts the main loop
+func (s *Simple) Init(){
 
 	//initalize
-	s.clientChan = make(chan *problemControlRequest)
+	s.clientChan = make(chan *request)
 	s.problemChan = make(chan problems.ProblemUpdate)
 	s.closeChan = make(chan bool)
-	s.problemState = newSimpleProblemState()
+	s.standbyChan = make(chan *request)
 
-	firstUpdate := s.problem.Init(s.problemChan)
+	firstUpdate := s.problem.Start(s.problemChan)
 
-	s.problemState.Alg = firstUpdate.Alg
-	s.problemState.LastUpdate = firstUpdate.Data
+	s.alg = firstUpdate.Alg
+	s.updateData = firstUpdate.Data
+	s.updateNumber = firstUpdate.Number
 
-	go s.problem.Loop()//Asynchronous execution of the problem loop (if it exists)
+	go s.problem.Loop() //Asynchronous execution of the problem 
+	//loop (if it exists)
 
 	go func() {
 		var update = problems.ProblemUpdate{}
-		var req = &problemControlRequest{}
+		var req = &request{}
 
 		for{
 			select{
 
 			case update = <- s.problemChan:
-				s.problemState.Update(update)
+				s.fromProblem(update)
 
 			case req = <- s.clientChan:
-				if req.Data != nil{
-					s.problemState.NewResult(req.Id, req.Data,
-					 s.problem, req.Response)
-				} else{
-					s.problemState.NewRequest(req.Id, req.Response)
-				}
+				s.fromClient(req)
 
 			//close the goroutine	
 			case <- s.closeChan:
@@ -78,33 +91,86 @@ func (s *SimpleProblemController) Init(){
 
 }
 
+//public functions
 
-func (s *SimpleProblemController) NewRequest(id uint32) (string, data, uint32, error){
+//NewRequest sends a new request to the controller. It returns 
+//the client algorithm, update data, update number and the error.
+//Algorithm always is 'Zero', except when 'lastUpdate' 
+//is zero (the first request).
+func (s *Simple) NewRequest(id uint32, lastUpdate uint32) (string, data, uint32, error){
 
-	req := &problemControlRequest{id, nil, make(chan problemControlResponse)}
+	req := &request{id, nil, lastUpdate, make(chan response)}
 	
 	s.clientChan <- req
 
 	res := <- req.Response
 
-	return res.Alg, res.Data, res.Err
+	if res.Err != nil{
+		return "", nil, 0, res.Err
+	}
+
+	if res.Number == lastUpdate{ //The client is updated. So, it will be set in 'standby'.
+		s.standbyChan <- req
+		res = <- req.Response
+	}
+
+	return res.Alg, res.Data, res.Number, res.Err
 
 }
 
-func (s *SimpleProblemController) NewResult(id uint32, data []string) error{
+//NewResult sends a new result to the controller.
+func (s *Simple) NewResult(id uint32, data []string, lastUpdate uint32) error{
 	if data == nil{
 		return errors.New("Result with no data")
 	}
 
-	req := &problemControlRequest{id, data, make(chan problemControlResponse)}
-	
-	s.clientChan <- req
+	go s.problem.NewResult(data, lastUpdate)//It executes asynchronously the 
+	//NewResult function of the problem
 
-	res := <- req.Response
-
-	return res.Err
+	return nil
 }
 
-func (s *SimpleProblemController) Close(){
+//Close stops the main loop of the controller.
+func (s *Simple) Close(){
 	s.closeChan <- true
+}
+
+
+//private functions
+
+//fromProblem manages 
+func (s *Simple) fromProblem(update problems.ProblemUpdate){
+	s.updateData = update.Data
+	s.updateNumber = update.Number
+
+	//Update the clients that were in standby
+	go func(update data, number uint32){
+		for{
+			select{
+			case req := <- s.standbyChan:
+				req.Response <- response{"", update, number, nil}
+			default:
+				return
+			}
+		}
+	}(update.Data, update.Number)
+}
+
+func (s *Simple) fromClient(req *request){
+	
+	switch{
+	case req.LastNumber == 0: //The client needs the algorithm.
+		req.Response <- response{s.alg, s.updateData, s.updateNumber, nil}
+
+	case req.LastNumber < s.updateNumber: //The client has an old update.
+		req.Response <- response{"", s.updateData, s.updateNumber, nil}
+		
+	case req.LastNumber == s.updateNumber: //The client is updated.
+		req.Response <- response{"", nil, s.updateNumber, nil}
+		
+	default:
+		req.Response <- response{"", nil, s.updateNumber, 
+			errors.New("The update number of the client is bigger")}
+	}
+
 }
