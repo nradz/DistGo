@@ -3,6 +3,7 @@ package clientController
 import(
 	"testing"
 	"time"
+	"github.com/nradz/DistGo/conf"
 )
 
 func TestClose(t *testing.T){
@@ -148,5 +149,44 @@ func TestNotInitialized(t *testing.T){
 	if err == nil{
 		t.Fatal("Close")
 	}
+}
+
+func TestMaxNumberClients(t *testing.T){
+	conf.SetMaxClients(3)
+
+	c := New()
+	c.Init()
+	defer c.Close()
+
+	header := make(map [string][]string)
+
+	id1, key1, err1 := c.NewClient(header)
+	if err1 != nil{
+		t.Error("Client1:", err1)
+	}
+
+	_, _, err2 := c.NewClient(header)
+	if err2 != nil{
+		t.Error("Client2:", err2)
+	}
+
+	_, _, err3 := c.NewClient(header)
+	if err3 != nil{
+		t.Error("Client3:", err3)
+	}
+
+	//Max reached
+	_, _, err4 := c.NewClient(header)
+	if err4 == nil{
+		t.Error("No error in Client4")
+	}
+
+	c.DeleteClient(id1, key1, header)
+
+	_, _, err5 := c.NewClient(header)
+	if err5 != nil{
+		t.Error("Client5:", err5)
+	}
+
 }
 

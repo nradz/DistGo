@@ -10,7 +10,7 @@ import(
 
 
 type configFile struct{
-	NClients uint32
+	MaxClients uint32
 	Ip string
 	Port string
 	Cors string
@@ -19,7 +19,7 @@ type configFile struct{
 
 //configuration vars
 var(
-	nClients uint32
+	maxClients uint32
 	ip string
 	port string
 	cors string
@@ -44,34 +44,39 @@ func init(){
 		log.Fatal(err)
 	}
 
-	nClients = data.NClients
+	maxClients = data.MaxClients
 	ip = data.Ip
 	port = data.Port
 	cors = data.Cors
 	problem = data.Problem
 }
 
-func NClients() uint32{
-	return nClients
+//NClients returns the maximum number of clients
+func MaxClients() uint32{
+	return maxClients
 }
 
-//Return the ip of the server
+func SetMaxClients(num uint32){
+	maxClients = num
+} 
+
+//Ip returns the ip of the server
 func Ip() string{
 	return ip
 }
 
-//Return the port where DistGo is listening
+//Port returns the port where DistGo is listening
 func Port() string{
 	return port
 }
 
-//Return the content of the header field
+//Cors returns the content of the header field
 //"Access-Control-Allow-Origin" of the responses
 func Cors() string{
 	return cors
 }
 
-//Return the name of the problem that is being executed
+//Problem returns the name of the problem that is being executed
 func Problem() string{
 	return problem
 }

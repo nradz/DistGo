@@ -13,11 +13,11 @@ const(
 )
 
 type ClientController struct{
-	started bool //started is true when clientController is running
-	clientChan chan *clientControlRequest //it is used to send data 
-	//from the functions to the main loop
-	closeChan chan bool //It is used to finish the main loop
-	clist clientList //It is the struct where the clients are saved
+	started bool //started is true when clientController is running.
+	clientChan chan *clientControlRequest //it is used to send data.
+	//from the functions to the main loop.
+	closeChan chan bool //It is used to finish the main loop.
+	clist *clientList //It is the struct where the clients are saved.
 }
 
 

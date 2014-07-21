@@ -13,6 +13,7 @@ import(
 type clientList struct{
 	nextId uint32 //The next position to the last one used
 	list []client //The list where the clients are saved
+	numClients uint32 //The amount of clients that are registered.
 }
 
 //The client struct
@@ -24,20 +25,24 @@ type client struct{
 
 
 //ClientList returns a struct where the clients will be managed.
-func ClientList() clientList{
+func ClientList() *clientList{
 
 	cl := clientList{}
 
 	cl.nextId = 0
-	cl.list = make([]client, conf.NClients()) //The maximum number of clients
+	cl.list = make([]client, conf.MaxClients()) //The maximum number of clients
 	//is determined in the configuration file.
+	cl.numClients = 0
 
-	return cl
+	return &cl
 }
 
 //newClient saves a new client into the struct. userAgent is used 
 //to reduce the possibility of a phishing attack.
-func (cl clientList) newClient(userAgent []string) (uint32, uint32, error){
+func (cl *clientList) newClient(userAgent []string) (uint32, uint32, error){
+	if cl.numClients >= conf.MaxClients(){
+		return 0, 0, errors.New("It have reached the maximum number of clients")
+	}
 
 	//Search an available position in the clientLst
 	var id uint32 = cl.nextId
@@ -45,7 +50,7 @@ func (cl clientList) newClient(userAgent []string) (uint32, uint32, error){
 	for !found{
 		switch{
 		
-		case id > conf.NClients(): //If the 'index' is bigger than 
+		case id >= conf.MaxClients(): //If the 'index' is bigger than 
 		//the maximum number of clients, it will be reset to zero
 			id = 0
 
@@ -68,14 +73,15 @@ func (cl clientList) newClient(userAgent []string) (uint32, uint32, error){
 
 	//Add the client to the list
 	cl.list[id] = cli 
+	cl.numClients += 1
 
 	return id, key, nil
 }
 
 //IsLogged checks if a client is registered. It is true if error is "nil".
-func (cl clientList) isLogged(id uint32, key uint32, userAgent []string) error{
+func (cl *clientList) isLogged(id uint32, key uint32, userAgent []string) error{
 	
-	if id >= conf.NClients(){
+	if id >= conf.MaxClients(){
 		return errors.New("Id is not valid")
 	}
 
@@ -98,13 +104,14 @@ func (cl clientList) isLogged(id uint32, key uint32, userAgent []string) error{
 }
 
 //deleteClient removes a client from the struct
-func (cl clientList) deleteClient(id uint32, key uint32, userAgent []string) error{
+func (cl *clientList) deleteClient(id uint32, key uint32, userAgent []string) error{
 
 	if err := cl.isLogged(id, key, userAgent); err != nil{
 		return err
 
 	}else{
 		cl.list[id].occupied = false
+		cl.numClients -= 1
 		return nil
 
 	}
