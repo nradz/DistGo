@@ -5,12 +5,12 @@
 package problems
 
 //The information that the problem sends to the clients.
-type data interface{}
+type Data interface{}
 
 //It is the struct where the problem sends updates to the problemController.
 type ProblemUpdate struct{
 	Alg string //The algorithm that the clients have to execute.
-	Data data //Data to the clients.
+	Data Data //Data to the clients.
 	Number uint32 //Update Number. It will increase with new updates.
 }
 

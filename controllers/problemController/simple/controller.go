@@ -1,4 +1,4 @@
-package problemController
+package simple
 
 import(
 	"errors"
@@ -16,12 +16,9 @@ type Simple struct{
 	closeChan chan bool //It is used to finish the main loop
 	problem problems.Problem //The problem that is been executed
 	alg string //The actual algorithm that is executing in the clients
-	updateData data //The last update available
+	updateData problems.Data //The last update available
 	updateNumber uint32//The number of the update
 }
-
-//Generic data
-type data interface{}
 
 //It is the struct used to send data from the functions 
 //to the main loop
@@ -38,7 +35,7 @@ type request struct{
 //The response struct
 type response struct{
 	Alg string //The client algorithm
-	Data data //The update data
+	Data problems.Data //The update data
 	Number uint32 //Number of the update
 	Err error
 }
@@ -97,7 +94,7 @@ func (s *Simple) Init(){
 //the client algorithm, update data, update number and the error.
 //Algorithm always is 'Zero', except when 'lastUpdate' 
 //is zero (the first request).
-func (s *Simple) NewRequest(id uint32, lastUpdate uint32) (string, data, uint32, error){
+func (s *Simple) NewRequest(id uint32, lastUpdate uint32) (string, problems.Data, uint32, error){
 
 	req := &request{id, nil, lastUpdate, make(chan response)}
 	
@@ -144,7 +141,7 @@ func (s *Simple) fromProblem(update problems.ProblemUpdate){
 	s.updateNumber = update.Number
 
 	//Update the clients that were in standby
-	go func(update data, number uint32){
+	go func(update problems.Data, number uint32){
 		for{
 			select{
 			case req := <- s.standbyChan:

@@ -1,6 +1,7 @@
 package connectionController
 
 import(
+	//"fmt"
 	"time"
 	"net/http"
 	"net/http/httptest"
@@ -11,13 +12,14 @@ import(
 	"github.com/nradz/DistGo/controllers/clientController"
 	"github.com/nradz/DistGo/controllers/problemController"
 	"github.com/nradz/DistGo/problems"
+	"github.com/nradz/DistGo/conf"
 )
 
 var json_type string = "application/json"
 
 var(
 	cli *clientController.ClientController
-	probCon *problemController.SimpleProblemController
+	probCon problemController.ProblemController
 )
 
 const(
@@ -34,28 +36,30 @@ const(
 	`	
 	)
 
-func TestNotPostMethod(t *testing.T){
+func TestNotPostMethod(t *testing.T){	
 	server := setup()
 	defer server.Close()
-	defer close()
+	defer close()	
 
 	resp, err := http.Get(server.URL)
 	if err != nil{
 		t.Fatal(err)
 	}
-	defer resp.Body.Close()
+	defer resp.Body.Close()	
 
 	sr, err := decode(resp.Body)
 	if err != nil{
 		t.Fatal(err)
-	}
+	}	
 
 	if sr.Code != 0{
 		t.Error("Incorrect Code:", sr.Code)
-	}
+	}	
+
 	if sr.Data.(string) != get_error{
 		t.Error("Incorrect message:", sr.Data)
 	}
+	
 
 }
 
@@ -91,7 +95,7 @@ func TestNotValidCode(t *testing.T){
 	defer server.Close()
 	defer close()
 
-	cr := ClientRequest{1,234,nil}
+	cr := ClientRequest{1, 0, 123, 234, nil}
 	
 	sr := normalPost(cr, t, server.URL)
 
@@ -108,13 +112,9 @@ func TestNewClient(t *testing.T){
 	defer server.Close()
 	defer close()
 
-	cr := ClientRequest{0, 10, nil}
+	cr := ClientRequest{0, 0, 10, 0, nil}
 
 	sr := normalPost(cr, t, server.URL)
-
-	if sr.Id == 0{
-		t.Error("No id:", sr.Id)
-	}
 
 	if sr.Code != 110{
 		t.Error("Incorrect Code: ", sr.Code)
@@ -127,13 +127,14 @@ func TestFirstRequest(t *testing.T){
 	defer server.Close()
 	defer close()
 
-	cr := ClientRequest{0, 10, nil}
+	cr := ClientRequest{0, 0, 10, 0, nil}
 
 	//login
 	sr := normalPost(cr, t, server.URL)
 
 	cr.Id = sr.Id
 	cr.Code = 20
+	cr.Key = sr.Key
 
 	sr = normalPost(cr, t, server.URL)
 
@@ -153,6 +154,10 @@ func TestFirstRequest(t *testing.T){
 		t.Error("No data:", sr.Data)
 	}
 
+	if sr.Number != 1{
+		t.Error("Incorrect number:", sr.Number)
+	}
+
 }
 
 
@@ -161,7 +166,7 @@ func TestNotLoggedRequest(t *testing.T){
 	defer server.Close()
 	defer close()
 
-	cr := ClientRequest{0, 20, nil}
+	cr := ClientRequest{0, 0, 20, 0, nil}
 
 	sr := normalPost(cr, t, server.URL)
 
@@ -175,13 +180,14 @@ func TestIncorrectHeader(t *testing.T){
 	defer server.Close()
 	defer close()
 
-	cr := ClientRequest{0, 10, nil}
+	cr := ClientRequest{0, 0, 10, 0, nil}
 
 	//login
 	sr := normalPost(cr, t, server.URL)
 
 	cr.Id = sr.Id
 	cr.Code = 20
+	cr.Key = sr.Key
 
 	json, err := encode(cr)
 	if err != nil{
@@ -220,12 +226,13 @@ func TestNewResult(t *testing.T){
 	defer server.Close()
 	defer close()
 
-	cr := ClientRequest{0, 10, nil}
+	cr := ClientRequest{0, 0, 10, 0, nil}
 
 	sr := normalPost(cr, t, server.URL)
 
 	cr.Id = sr.Id
 	cr.Code = 20
+	cr.Key = sr.Key
 	
 	sr = normalPost(cr, t, server.URL)
 
@@ -244,38 +251,14 @@ func TestNewResultNoData(t *testing.T){
 	defer server.Close()
 	defer close()
 
-	cr := ClientRequest{0, 10, nil}
+	cr := ClientRequest{0, 0, 10, 0, nil}
 
 	sr := normalPost(cr, t, server.URL)
 
 	cr.Id = sr.Id
-	cr.Code = 20
-	
-	sr = normalPost(cr, t, server.URL)
-
+	cr.Key = sr.Key
 	cr.Code = 30
 	
-	sr = normalPost(cr, t, server.URL)
-
-	if sr.Code != 0{
-		t.Error("Incorrect Code:", sr.Code)
-	}
-}
-
-func TestNewResultNoAlg(t *testing.T){
-	server := setup()
-	defer server.Close()
-	defer close()
-
-	cr := ClientRequest{0, 10, nil}
-
-	sr := normalPost(cr, t, server.URL)
-
-	cr.Id = sr.Id
-	cr.Code = 30
-	cr.Data = make([]string, 1)
-	cr.Data[0] = "6"
-
 	sr = normalPost(cr, t, server.URL)
 
 	if sr.Code != 0{
@@ -288,7 +271,7 @@ func TestNotLoggedResult(t *testing.T){
 	defer server.Close()
 	defer close()
 
-	cr := ClientRequest{0, 30, nil}
+	cr := ClientRequest{0, 0, 30, 0, nil}
 
 	sr := normalPost(cr, t, server.URL)
 
@@ -302,8 +285,8 @@ func TestUpdate(t *testing.T){
 	defer server.Close()
 	defer close()
 
-	cr1 := ClientRequest{0, 10, nil}
-	cr2 := ClientRequest{0, 10, nil}
+	cr1 := ClientRequest{0, 0, 10, 0, nil}
+	cr2 := ClientRequest{0, 0, 10, 0, nil}
 
 	//login
 	sr1 := normalPost(cr1, t, server.URL)
@@ -313,10 +296,16 @@ func TestUpdate(t *testing.T){
 	cr1.Id = sr1.Id
 	cr2.Id = sr2.Id
 	cr1.Code = 20
-	cr2.Code = 20	
+	cr2.Code = 20
+	cr1.Key = sr1.Key
+	cr2.Key = sr2.Key
+	cr1.LastUpdate = sr1.Number
+	cr2.LastUpdate = sr2.Number	
 	
 	sr1 = normalPost(cr1, t, server.URL)
 	sr2 = normalPost(cr2, t, server.URL)
+	cr1.LastUpdate = sr1.Number
+	cr2.LastUpdate = sr2.Number	
 
 	//result
 	cr1.Code = 30
@@ -332,6 +321,9 @@ func TestUpdate(t *testing.T){
 	if int(sr2.Data.(float64)) != 6{
 		t.Error("Incorrect data:", sr2.Data)
 	}
+	if sr2.Number != 2{
+		t.Error("Incorrect number:", sr2.Number)
+	}
 
 }
 
@@ -340,13 +332,14 @@ func TestDelete(t *testing.T){
 	defer server.Close()
 	defer close()
 
-	cr := ClientRequest{0, 10, nil}
+	cr := ClientRequest{0, 0, 10, 0, nil}
 
 	//login
 	sr := normalPost(cr, t, server.URL)
 
 	cr.Id = sr.Id
 	cr.Code = 100
+	cr.Key = sr.Key
 
 	sr = normalPost(cr, t, server.URL)
 
@@ -369,7 +362,7 @@ func TestDeteleNotLogged(t *testing.T){
 	defer server.Close()
 	defer close()
 
-	cr := ClientRequest{34, 100, nil}
+	cr := ClientRequest{34, 65, 100, 0, nil}
 
 	sr := normalPost(cr, t, server.URL)
 
@@ -378,18 +371,61 @@ func TestDeteleNotLogged(t *testing.T){
 	}
 }
 
+func TestMaxUserReached(t *testing.T){
+	server := setup()
+	defer server.Close()
+	defer close()
+
+	conf.SetMaxClients(3)
+
+	cr1 := ClientRequest{0, 0, 10, 0, nil}
+	cr2 := ClientRequest{0, 0, 10, 0, nil}
+	cr3 := ClientRequest{0, 0, 10, 0, nil}
+
+	sr1 := normalPost(cr1, t, server.URL)
+	normalPost(cr2, t, server.URL)
+	normalPost(cr3, t, server.URL)
+
+	//Max limit reached
+	cr4 := ClientRequest{0, 0, 10, 0, nil}
+	sr4 := normalPost(cr4, t, server.URL)
+
+	if sr4.Code != 0{
+		t.Error("Incorrect code 1:", sr4.Code)
+	}
+
+	cr1.Id = sr1.Id
+	cr1.Key = sr1.Key
+	cr1.Code = 100
+
+	//Delete cr1
+	normalPost(cr1, t, server.URL)
+
+	//request again
+	sr4 = normalPost(cr4, t, server.URL)
+
+	if sr4.Code == 0{
+		t.Error("Incorrect code 2:", sr4.Code)
+	}
+
+}
+
+
 
 //////////////////////////////////////////////////////
 
 func setup() *httptest.Server{	
-	cli = clientController.NewClientController()
+	cli = clientController.New()
 	cli.Init()
 
 	prob := problems.GetProblem("pruebaProblem")
-	probCon = problemController.NewSimpleProblemController(prob)
+	probCon = problemController.New(prob)
+	if probCon == nil{
+		panic("nil problemController")
+	}
 	probCon.Init()
 	
-	con := NewConnectionController(cli, probCon)
+	con := New(cli, probCon)
 
 	server := httptest.NewUnstartedServer(con)	
 
