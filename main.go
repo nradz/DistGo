@@ -21,14 +21,14 @@ func main() {
 	//db.StartDB() //initialize the database
 
 	//Start Controllers
-	cli := clientController.NewClientController()
+	cli := clientController.New()
 	cli.Init()
 
 	problem := problems.GetProblem(conf.Problem())
-	probCon := problemController.NewSimpleProblemController(problem)
+	probCon := problemController.New(problem)
 	probCon.Init()
 
-	con := connectionController.NewConnectionController(cli, probCon)
+	con := connectionController.New(cli, probCon)
 	
 	fmt.Println("DistGo is working!")
 
