@@ -33,8 +33,9 @@ func init(){
 	root := os.Getenv("HOME")
 	file, err := os.Open(root+"/.DistGo/DistGo.conf")
 	if err != nil{
-		log.Fatal(err)
+		log.Fatal("Configuration error:", err)
 	}
+	defer file.Close()
 
 	decoder := json.NewDecoder(file)
 	data := configFile{}

@@ -139,7 +139,7 @@ func (c *ConnectionController) newRequest(sr *ServerResponse, cr ClientRequest, 
 	}
 
 	sr.Data = update
-	sr.Number = number
+	sr.Status = number
 
 	if alg != ""{
 		sr.Alg = alg

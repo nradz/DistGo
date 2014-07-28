@@ -1,6 +1,7 @@
 package simple
 
 import(
+	//"fmt"
 	"errors"
 	//"github.com/nradz/DistGo/conf"
 	"github.com/nradz/DistGo/problems"
@@ -17,7 +18,7 @@ type Simple struct{
 	problem problems.Problem //The problem that is been executed
 	alg string //The actual algorithm that is executing in the clients
 	updateData problems.Data //The last update available
-	updateNumber uint32//The number of the update
+	updateNumber uint32 //The number of the update
 }
 
 //It is the struct used to send data from the functions 
@@ -154,7 +155,7 @@ func (s *Simple) fromProblem(update problems.ProblemUpdate){
 }
 
 func (s *Simple) fromClient(req *request){
-	
+		
 	switch{
 	case req.LastNumber == 0: //The client needs the algorithm.
 		req.Response <- response{s.alg, s.updateData, s.updateNumber, nil}

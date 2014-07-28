@@ -2,6 +2,9 @@ package problems
 
 import(
 	"strconv"
+	"os"
+	"io/ioutil"
+	"log"
 	//"fmt"
 	)
 
@@ -11,16 +14,14 @@ func init(){
 }
 
 type pruebaProblem struct{
+	alg string
 	best int64
 	number uint32
 	c chan ProblemUpdate
 }
 
 const(
-	alg = `function mainFunc(romero,data){
-				window.alert("miau");
-					romero.finish();
-				}
+	alg = `
 	`	
 	)
 
@@ -36,7 +37,18 @@ func (prob *pruebaProblem) Start(c chan ProblemUpdate) ProblemUpdate{
 
 	prob.number = 1
 
-	return ProblemUpdate{alg, prob.best, prob.number}
+	//Load the algorithm
+	root := os.Getenv("HOME")
+	buf, err := ioutil.ReadFile(root+"/.DistGo/prueba/alg.js")
+	if err != nil{
+		log.Fatal("prueba Start error: ", err)
+	}
+
+	prob.alg = string(buf)
+
+
+
+	return ProblemUpdate{prob.alg, prob.best, prob.number}
 
 }
 

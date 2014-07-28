@@ -17,7 +17,7 @@ type ServerResponse struct{
 	Key uint32
 	Code uint8
 	Alg string
-	Number uint32
+	Status uint32
 	Data data
 }
 
