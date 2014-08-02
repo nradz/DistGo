@@ -111,7 +111,7 @@ func TestStandby(t *testing.T){
 	datos := make([]string, 1)
 	datos[0] = "6"
 
-	aux := make(chan data)
+	aux := make(chan problems.Data)
 
 	go func(){
 		_, update, _, _ := sp.NewRequest(id1, lastUpdate1)

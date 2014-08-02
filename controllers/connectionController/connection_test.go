@@ -29,10 +29,15 @@ const(
 	)
 
 const(
-	alg = `function mainFunc(romero,data){
-				window.alert("miau");
-					romero.finish();
+	alg = `function problem(romero){
+			this.mainFunc = function(data){
+				romero.result(["6"]);
+				romero.request();
+				var up = romero.newUpdate();
+				self.postMessage({'cmd':'log','message':up});
+				romero.finish();
 				}
+			}
 	`	
 	)
 
@@ -146,7 +151,7 @@ func TestFirstRequest(t *testing.T){
 		t.Error("No Code:", sr.Code)
 	}
 
-	if sr.Alg != alg{
+	if sr.Alg == ""{
 		t.Error("No alg:", sr.Alg)
 	}
 
@@ -154,8 +159,8 @@ func TestFirstRequest(t *testing.T){
 		t.Error("No data:", sr.Data)
 	}
 
-	if sr.Number != 1{
-		t.Error("Incorrect number:", sr.Number)
+	if sr.Status != 1{
+		t.Error("Incorrect number:", sr.Status)
 	}
 
 }
@@ -299,13 +304,13 @@ func TestUpdate(t *testing.T){
 	cr2.Code = 20
 	cr1.Key = sr1.Key
 	cr2.Key = sr2.Key
-	cr1.LastUpdate = sr1.Number
-	cr2.LastUpdate = sr2.Number	
+	cr1.LastUpdate = sr1.Status
+	cr2.LastUpdate = sr2.Status	
 	
 	sr1 = normalPost(cr1, t, server.URL)
 	sr2 = normalPost(cr2, t, server.URL)
-	cr1.LastUpdate = sr1.Number
-	cr2.LastUpdate = sr2.Number	
+	cr1.LastUpdate = sr1.Status
+	cr2.LastUpdate = sr2.Status	
 
 	//result
 	cr1.Code = 30
@@ -321,8 +326,8 @@ func TestUpdate(t *testing.T){
 	if int(sr2.Data.(float64)) != 6{
 		t.Error("Incorrect data:", sr2.Data)
 	}
-	if sr2.Number != 2{
-		t.Error("Incorrect number:", sr2.Number)
+	if sr2.Status != 2{
+		t.Error("Incorrect number:", sr2.Status)
 	}
 
 }

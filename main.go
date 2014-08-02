@@ -2,14 +2,11 @@ package main
 
 import(
 	"fmt"
-	//"github.com/nradz/DistGo/db"
-	//"github.com/nradz/DistGo/distgo_types"
 	"github.com/nradz/DistGo/conf"
 	"github.com/nradz/DistGo/controllers/connectionController"
 	"github.com/nradz/DistGo/controllers/clientController"
 	"github.com/nradz/DistGo/controllers/problemController"
 	"github.com/nradz/DistGo/problems"
-	//"github.com/nradz/DistGo/channels"
 )
 
 
