@@ -52,11 +52,12 @@ func init(){
 	problem = data.Problem
 }
 
-//NClients returns the maximum number of clients
+//MaxClients returns the maximum number of clients
 func MaxClients() uint32{
 	return maxClients
 }
 
+//SetMaxClients sets the maximum number of clients
 func SetMaxClients(num uint32){
 	maxClients = num
 } 
@@ -80,4 +81,9 @@ func Cors() string{
 //Problem returns the name of the problem that is being executed
 func Problem() string{
 	return problem
+}
+
+//SetProblem sets the name of the problem
+func SetProblem(prob string){
+	problem = prob
 }
