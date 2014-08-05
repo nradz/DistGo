@@ -200,7 +200,7 @@ func (prob *perFlowACOProblem) evaluate(sequence []int) int{
 			flowSeq[i] = flowSeq[i] + prob.costs[m][v]
 
 			default:
-			flowSeq[i] = Math.max(flowSeq[i-1], flowSeq[i]) + prob.costs[m][v]
+			flowSeq[i] = max(flowSeq[i-1], flowSeq[i]) + prob.costs[m][v]
 			}
 		}
 
