@@ -91,7 +91,7 @@ func TestByTotalFlowtime(t *testing.T){
 	prob.machines = 5
 	prob.costs = costs_test
 
-	list := [][]int{{2,1},{1,2}}
+	list := [][]int{{1,2},{2,1}}
 
 	sort.Sort(prob.byTotalFlowtime(list))
 
@@ -119,15 +119,33 @@ func TestNEH(t *testing.T){
 	
 }
 
+func TestJobIndexBased(t *testing.T){
+	setup()
+	prob := perFlowACOProblem{}
+	prob.jobs = 5
+	prob.machines = 5
+	prob.costs = costs_test
+
+	res := prob.jobIndexBased([]int{0,1,2,3,4})
+	
+	ok := reflect.DeepEqual(res, []int{2,0,1,3,4})
+
+	if !ok{
+		t.Error("Incorrect order: ", res)
+	}
+}
+
 func TestStart(t *testing.T){
 	setup()
 	prob := perFlowACOProblem{}
 
 	c := make(chan problems.ProblemUpdate)
 
-	res := prob.Start(c)
+	prob.Start(c)
 
-	fmt.Println(res)
+	//res := prob.Start(c)
+
+	//fmt.Println(res)
 }
 
 func TestNewResult(t *testing.T){
@@ -138,7 +156,7 @@ func TestNewResult(t *testing.T){
 	prob.costs = costs_test
 	prob.bestSeq = []int{0,1,2,3,4}
 	prob.status = 1
-	prob.checkTime =3000
+	prob.checkTime = 3000
 	prob.newSeq = make(chan []int)
 	prob.updateChan = make(chan problems.ProblemUpdate)
 

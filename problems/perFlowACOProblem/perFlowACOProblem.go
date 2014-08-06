@@ -35,6 +35,7 @@ type perFlowACOProblem struct{
 	number int //Set by loadConf
 	costs [][]int //Set by loadProblem
 	bestSeq []int //The best sequence received
+	bestValue int //The total flowtime of bestSeq
 	receivedSeqs [][]int //List of received sequences 
 	//that will be evaluated
 	status uint32 //The status number of the problem
@@ -64,7 +65,6 @@ func (prob *perFlowACOProblem) Start(c chan problems.ProblemUpdate) problems.Pro
 	prob.loadConf()
 	prob.loadProblem()
 
-	prob.bestSeq = prob.neh()
 	prob.status = 1
 	prob.newSeq = make(chan []int)
 	prob.updateChan = c
@@ -76,10 +76,22 @@ func (prob *perFlowACOProblem) Start(c chan problems.ProblemUpdate) problems.Pro
 		log.Fatal("perFlowACO Start error: ", err)
 	}
 
+	//Generate the seed
+	seed := prob.neh()
+
+	//three times
+	seed = prob.jobIndexBased(seed)
+	seed = prob.jobIndexBased(seed)
+	seed = prob.jobIndexBased(seed)
+
+	prob.bestSeq = seed
+	prob.bestValue = prob.evaluate(prob.bestSeq)
+
 	prob.alg = "var costs = " + prob.matrix2string(prob.costs) + "\n" + string(buf)
 
 	return problems.ProblemUpdate{prob.alg, prob.bestSeq, prob.status}
 }
+
 
 func (prob *perFlowACOProblem) NewResult(data []string, lastUpdate uint32){
 	//Transform []string to []int
@@ -97,6 +109,7 @@ func (prob *perFlowACOProblem) NewResult(data []string, lastUpdate uint32){
 		prob.newSeq <- seq
 	}
 }
+
 
 func (prob *perFlowACOProblem) Loop(){
 	prob.timer = time.NewTimer(time.Duration(prob.checkTime) * time.Millisecond)
@@ -116,6 +129,7 @@ func (prob *perFlowACOProblem) Loop(){
 				//If the best seq of the list is NOT the current best seq
 				if !reflect.DeepEqual(prob.receivedSeqs[0], prob.bestSeq){
 					prob.bestSeq = prob.receivedSeqs[0]
+					prob.bestValue = prob.evaluate(prob.bestSeq)
 					prob.status += 1
 					prob.updateChan <- problems.ProblemUpdate{"", prob.bestSeq, prob.status}
 				}
@@ -243,7 +257,7 @@ func (prob *perFlowACOProblem) neh() []int{
 			copy(aux,res)
 			switch{				
 			case e == 0:
-				aux = append([]int{seq[i]}, res...)
+				aux = append([]int{seq[i]}, aux...)
 			case e == i:
 				aux = append(aux, seq[i])
 			default:
@@ -257,6 +271,62 @@ func (prob *perFlowACOProblem) neh() []int{
 		sort.Sort(prob.byTotalFlowtime(list))
 		res = list[0]
 	}	
+
+	return res
+}
+
+func (prob *perFlowACOProblem) jobIndexBased(seq []int) []int{
+	res := make([]int, len(seq))
+	copy(res, seq)
+
+	for _, v := range seq{
+		
+		var index int
+		//Search the position of v in res
+		for i, elem := range res{
+			if elem == v{
+				index = i
+				break
+			}
+		}
+
+		list := [][]int{}
+		for e:= 0; e < len(seq); e++{
+			actual := make([]int, len(seq))
+			copy(actual,res)
+			
+			//Delete the current element
+			if index < (len(seq) - 1){
+				actual = append(actual[:index], actual[index+1:]...)				
+			} else{
+				actual = append(actual[:index])
+			}
+			
+			switch{
+			case e == index:
+				break			
+			
+			case e == 0:
+				actual = append([]int{v}, actual...)
+				list = append(list, actual)
+			
+			case e == (len(seq)-1):
+				actual = append(actual, v)
+				list = append(list, actual)
+			
+			default:
+				aux := make([]int, len(actual[e:]))
+				copy(aux, actual[e:])
+				actual = append(actual[:e], v)
+				actual = append(actual, aux...)
+				list = append(list, actual)
+			}
+		}
+
+		list = append(list, res)
+		sort.Sort(prob.byTotalFlowtime(list))
+		res = list[0]
+	}
 
 	return res
 }
