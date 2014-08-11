@@ -1,7 +1,7 @@
 package perFlowACOProblem
 
 import(
-	//"fmt"
+	"fmt"
 	"time"
 	"strconv"
 	"reflect"
@@ -49,12 +49,17 @@ type perFlowACOProblem struct{
 	//received sequences
 	timer *time.Timer //Timer that indicate when 
 	//evaluated the received sequences
+	log *log.Logger
 
 }
 
 
-func init(){
-	problems.AddProblem("perFlowACOProblem", &perFlowACOProblem{})
+// func init(){
+// 	problems.AddProblem("perFlowACOProblem", &perFlowACOProblem{})
+// }
+
+func New() *perFlowACOProblem{
+	return &perFlowACOProblem{}
 }
 
 func (prob *perFlowACOProblem) Type() string{
@@ -68,6 +73,7 @@ func (prob *perFlowACOProblem) Start(c chan problems.ProblemUpdate) problems.Pro
 	prob.status = 1
 	prob.newSeq = make(chan []int)
 	prob.updateChan = c
+	prob.log = problems.NewLog("values","",log.Ltime)
 
 	//Load the algorithm
 	root := os.Getenv("HOME")
@@ -86,6 +92,7 @@ func (prob *perFlowACOProblem) Start(c chan problems.ProblemUpdate) problems.Pro
 
 	prob.bestSeq = seed
 	prob.bestValue = prob.evaluate(prob.bestSeq)
+	prob.log.Println(prob.bestValue, prob.bestSeq)
 
 	prob.alg = "var costs = " + prob.matrix2string(prob.costs) + "\n" + string(buf)
 
@@ -94,6 +101,7 @@ func (prob *perFlowACOProblem) Start(c chan problems.ProblemUpdate) problems.Pro
 
 
 func (prob *perFlowACOProblem) NewResult(data []string, lastUpdate uint32){
+	fmt.Println(data)
 	//Transform []string to []int
 	seq := make([]int, prob.jobs)
 	for i, v := range data{
@@ -130,6 +138,7 @@ func (prob *perFlowACOProblem) Loop(){
 				if !reflect.DeepEqual(prob.receivedSeqs[0], prob.bestSeq){
 					prob.bestSeq = prob.receivedSeqs[0]
 					prob.bestValue = prob.evaluate(prob.bestSeq)
+					prob.log.Println(prob.bestValue, prob.bestSeq)
 					prob.status += 1
 					prob.updateChan <- problems.ProblemUpdate{"", prob.bestSeq, prob.status}
 				}

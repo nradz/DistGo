@@ -28,14 +28,13 @@ func (c *ConnectionController) Init(){
 
 	http.Handle("/", c)
 
-
 	http.ListenAndServe(":"+conf.Port(), nil)
 
 }
 
 //ServeHTTP is the handler that will be executed by the server.
 func (c *ConnectionController) ServeHTTP(w http.ResponseWriter, r *http.Request){
-
+	
 	if conf.Cors() != ""{
 		w.Header().Set("Access-Control-Allow-Origin", conf.Cors())
 	}

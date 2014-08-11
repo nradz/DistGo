@@ -1,4 +1,4 @@
-package problems
+package pruebaProblem
 
 import(
 	"github.com/nradz/DistGo/problems"

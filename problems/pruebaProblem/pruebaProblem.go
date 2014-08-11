@@ -1,4 +1,4 @@
-package problems
+package pruebaProblem
 
 import(
 	"github.com/nradz/DistGo/problems"
@@ -10,9 +10,9 @@ import(
 	)
 
 
-func init(){
-	problems.AddProblem("pruebaProblem", &pruebaProblem{})
-}
+// func init(){
+// 	problems.AddProblem("pruebaProblem", &pruebaProblem{})
+// }
 
 type pruebaProblem struct{
 	alg string
@@ -20,6 +20,10 @@ type pruebaProblem struct{
 	number uint32
 	file *log.Logger
 	c chan problems.ProblemUpdate
+}
+
+func New() *pruebaProblem{
+	return &pruebaProblem{}
 }
 
 func (prob *pruebaProblem) Type() string{

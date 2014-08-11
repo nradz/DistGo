@@ -2,6 +2,7 @@ package problemController
 
 
 import(
+	"errors"
 	"github.com/nradz/DistGo/problems"
 	"github.com/nradz/DistGo/controllers/problemController/simple"
 )
@@ -19,11 +20,11 @@ type ProblemController interface{
 
 //New return a new problemController.
 //It will be right for the problem.
-func New(prob problems.Problem) ProblemController{
+func New(prob problems.Problem) (ProblemController, error){
 	switch prob.Type(){
 		case "simple":
-			return simple.New(prob)
+			return simple.New(prob), nil
 		default:
-			return nil
+			return nil, errors.New("Problem's type is not valid.")
 	}
 }
