@@ -100,17 +100,20 @@ function problem(rom){
 		var seq = new Array(this.jobs);
 		var unscheduled = this.bestSeq.slice();
 
-		var values = new Array(this.jobs);
-
-		for(var job = 0; job < this.jobs; job++){
-
-			values[job] = this.trails[job].reduce(function(prev, curr){
-				return prev + curr;
-			});
-
-		}
+		
 
 		for(var pos = 0; pos < this.jobs; pos++){
+			
+			var values = new Array(this.jobs);
+
+			for(var job = 0; job < this.jobs; job++){
+
+				values[job] = this.trails[job].slice(0,pos+1).reduce(function(prev, curr){
+					return prev + curr;
+				});
+
+			}
+
 			var rand = Math.random();
 
 			if(rand <= 0.4){
